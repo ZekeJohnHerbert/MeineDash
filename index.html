@@ -1502,11 +1502,12 @@ async function spInit(){
   if(code){
     // Direct redirect fallback
     window.history.replaceState(null, '', window.location.pathname);
+    window.history.replaceState(null, '', window.location.pathname);
     await spExchangeCode(code);
   } else {
     spToken = localStorage.getItem('bc_sp_tok');
   }
-  if(spToken){ spStartPolling(); if(window.Spotify) spInitPlayer(); }
+  if(spToken){ rfr('spotify'); spStartPolling(); if(window.Spotify) spInitPlayer(); }
 }
 
 function spLogout(){
