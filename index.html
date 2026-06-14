@@ -220,6 +220,87 @@ header .sub { font-size: 11px; color: rgba(200,160,100,0.7); margin-top: 1px; }
 .theme-notes   .card-icon { background: #fdf8d8; }
 .theme-calc    .card-head { border-bottom-color: #5577dd44; }
 .theme-calc    .card-icon { background: #e0e8f8; }
+.theme-pinboard .card-head { border-bottom-color: #e8402044; }
+.theme-pinboard .card-icon { background: #fce0d0; }
+
+/* ── PINBOARD ── */
+.pinboard-card {
+  grid-column: span 2;
+}
+@media (max-width: 680px) { .pinboard-card { grid-column: span 1; } }
+
+.pinboard {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 10px 4px 6px;
+  min-height: 80px;
+}
+
+.polaroid {
+  background: #fffef8;
+  padding: 8px 8px 28px;
+  box-shadow: 2px 3px 10px rgba(40,18,4,0.25), 0 1px 3px rgba(40,18,4,0.12);
+  position: relative;
+  cursor: pointer;
+  transition: transform .2s ease, box-shadow .2s ease;
+  flex-shrink: 0;
+  width: 130px;
+}
+.polaroid:hover {
+  transform: scale(1.06) rotate(0deg) !important;
+  box-shadow: 4px 6px 18px rgba(40,18,4,0.35);
+  z-index: 10;
+}
+/* random rotations via nth-child */
+.polaroid:nth-child(5n+1) { transform: rotate(-3deg); }
+.polaroid:nth-child(5n+2) { transform: rotate(2deg); }
+.polaroid:nth-child(5n+3) { transform: rotate(-1.5deg); }
+.polaroid:nth-child(5n+4) { transform: rotate(3.5deg); }
+.polaroid:nth-child(5n+5) { transform: rotate(-2.5deg); }
+
+/* pin on polaroid */
+.polaroid::before {
+  content: '';
+  position: absolute; top: -7px; left: 50%; transform: translateX(-50%);
+  width: 11px; height: 11px; border-radius: 50%; z-index: 2;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.3);
+}
+.polaroid:nth-child(3n+1)::before { background: radial-gradient(circle at 40% 35%, #e86060, #a02020); }
+.polaroid:nth-child(3n+2)::before { background: radial-gradient(circle at 40% 35%, #6090e8, #2040a0); }
+.polaroid:nth-child(3n+3)::before { background: radial-gradient(circle at 40% 35%, #60c860, #207a20); }
+
+.polaroid img {
+  width: 114px; height: 100px;
+  object-fit: cover; display: block;
+  background: #e8ddd0;
+}
+.polaroid img.broken { filter: grayscale(1); opacity: 0.4; }
+.polaroid-caption {
+  font-size: 11px; color: #6b5540;
+  text-align: center; margin-top: 6px;
+  font-family: 'Segoe UI', sans-serif;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  max-width: 114px;
+}
+.polaroid-del {
+  position: absolute; top: 3px; right: 4px;
+  font-size: 13px; color: rgba(100,60,20,0.3);
+  cursor: pointer; line-height: 1; display: none;
+}
+.polaroid:hover .polaroid-del { display: block; }
+.polaroid-del:hover { color: #c02020; }
+
+.pinboard-empty {
+  color: var(--text3); font-size: 13px; font-style: italic; padding: 8px 0;
+  width: 100%;
+}
+
+.pin-add-area {
+  padding: 9px 15px; border-top: 1px solid rgba(120,80,30,0.08);
+  display: flex; gap: 6px; flex-wrap: wrap;
+  background: rgba(160,100,40,0.04);
+}
 
 .badge {
   font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 20px;
@@ -582,13 +663,26 @@ input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; flex
     </div>
   </div>
 
+  <!-- PINNWAND -->
+  <div class="card theme-pinboard pinboard-card">
+    <div class="card-head"><div class="card-icon">📌</div><h2>Pinnwand</h2><span class="badge" id="pin-badge">0</span></div>
+    <div class="card-body">
+      <div class="pinboard" id="pinboard"></div>
+    </div>
+    <div class="pin-add-area">
+      <input type="url" id="pin-url" placeholder="Bild-URL einfügen (https://...)..." class="flex1" />
+      <input type="text" id="pin-caption" placeholder="Beschriftung (optional)" class="w120" />
+      <button class="add-btn" onclick="addPin()">📌 Anpinnen</button>
+    </div>
+  </div>
+
 </div>
 
 <script>
 // ── CONSTANTS ─────────────────────────────
 const LS_DATA='zeke_dash_v4', LS_TOKEN='zeke_gh_token', LS_GIST_ID='zeke_gist_id';
 const GIST_FNAME='zeke-dashboard.json';
-let D={shopping:[],watchlist:[],links:[],games:[],music:[],countdowns:[],events:[],notes:''};
+let D={shopping:[],watchlist:[],links:[],games:[],music:[],countdowns:[],events:[],pins:[],notes:''};
 let syncTimer=null, calYear, calMonth;
 
 // init cal to current month
@@ -670,7 +764,7 @@ async function init(){
     document.getElementById('setup-modal').classList.remove('hidden');
   }
 }
-function renderAll(){renderShop();renderWatch();renderLinks();renderGames();renderMusic();renderCountdowns();renderCal();document.getElementById('notes').value=D.notes||'';}
+function renderAll(){renderShop();renderWatch();renderLinks();renderGames();renderMusic();renderCountdowns();renderCal();renderPins();document.getElementById('notes').value=D.notes||'';}
 
 // ── CLOCK ─────────────────────────────────
 function tick(){const n=new Date();document.getElementById('clock').textContent=n.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'})+'  '+n.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});}
@@ -813,6 +907,34 @@ document.getElementById('notes').addEventListener('input',function(){
   noteTimer2=setTimeout(()=>{scheduleSave();const el=document.getElementById('note-saved');el.textContent='✓ gespeichert';setTimeout(()=>el.textContent='',2000);},800);
 });
 
+// ── PINNWAND ──────────────────────────────
+function renderPins(){
+  const el=document.getElementById('pinboard');
+  if(!D.pins)D.pins=[];
+  document.getElementById('pin-badge').textContent=D.pins.length;
+  if(!D.pins.length){
+    el.innerHTML='<div class="pinboard-empty">Noch keine Bilder angepinnt – einfach eine Bild-URL einfügen</div>';
+    return;
+  }
+  el.innerHTML=D.pins.map((p,i)=>`
+    <div class="polaroid" title="${esc(p.caption||p.url)}">
+      <span class="polaroid-del" onclick="delPin(${i})">\u00d7</span>
+      <img src="${esc(p.url)}" alt="${esc(p.caption||'')}" loading="lazy"
+        onerror="this.classList.add('broken');this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22114%22 height=%22100%22%3E%3Crect width=%22114%22 height=%22100%22 fill=%22%23e8ddd0%22/%3E%3Ctext x=%2257%22 y=%2256%22 text-anchor=%22middle%22 font-size=%2228%22 fill=%22%23b0a090%22%3E\ud83d\uddbc\ufe0f%3C/text%3E%3C/svg%3E'"
+        onclick="openImg('${esc(p.url)}')" />
+      <div class="polaroid-caption">${esc(p.caption||'\u2013')}</div>
+    </div>`).join('');
+}
+function addPin(){
+  const u=v('pin-url'), c=v('pin-caption');
+  if(!u||!u.startsWith('http'))return;
+  if(!D.pins)D.pins=[];
+  D.pins.push({url:u,caption:c});
+  cl('pin-url');cl('pin-caption');scheduleSave();renderPins();
+}
+function delPin(i){D.pins.splice(i,1);scheduleSave();renderPins();}
+function openImg(url){window.open(url,'_blank');}
+
 // ── RECHNER ───────────────────────────────
 let cVal='0',cOp=null,cPrev=null,cNew=true;
 function calcDisplay(){document.getElementById('calc-result').textContent=cVal.length>11?parseFloat(cVal).toPrecision(8):cVal;document.getElementById('calc-expr').textContent=cPrev&&cOp?cPrev+' '+({'+':'+','-':'−','*':'×','/':'÷'}[cOp]||cOp):'';}
@@ -841,7 +963,7 @@ function v(id){return document.getElementById(id).value.trim();}
 function cl(id){document.getElementById(id).value='';}
 function del(arr,i){D[arr].splice(i,1);scheduleSave();renderAll();}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
-document.querySelectorAll('.add-area input, .cal-add input').forEach(inp=>{
+document.querySelectorAll('.add-area input, .cal-add input, .pin-add-area input').forEach(inp=>{
   inp.addEventListener('keydown',e=>{if(e.key!=='Enter')return;inp.closest('.card').querySelector('.add-btn')?.click();});
 });
 
