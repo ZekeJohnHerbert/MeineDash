@@ -74,6 +74,43 @@ body.desk-work::before{
     radial-gradient(ellipse 40% 60% at 60% 10%, rgba(124,58,237,0.12) 0%, transparent 50%);
 }
 
+
+/* ── VIDEO PLAYER ── */
+.vid-player{
+  width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius-sm);
+  overflow:hidden; position:relative; margin-bottom:10px;
+}
+.vid-player iframe,.vid-player video{
+  width:100%; height:100%; border:none; display:block;
+}
+.vid-placeholder{
+  width:100%; height:100%; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:8px;
+  background:var(--bg4); color:var(--text3);
+}
+.vid-placeholder svg{ width:32px; height:32px; opacity:.4; }
+.vid-placeholder span{ font-size:11px; }
+
+.vid-list{ display:flex; flex-direction:column; gap:4px; margin-top:2px; max-height:160px; overflow-y:auto; }
+.vid-list::-webkit-scrollbar{ width:3px; }
+.vid-list::-webkit-scrollbar-thumb{ background:var(--border2); border-radius:2px; }
+.vid-item{
+  display:flex; align-items:center; gap:8px; padding:6px 8px;
+  border-radius:6px; border:1px solid var(--border); background:var(--surface);
+  cursor:pointer; transition:all .15s; font-size:12px;
+}
+.vid-item:hover{ background:var(--surface2); border-color:var(--accent); }
+.vid-item.active{ border-color:var(--accent); background:rgba(124,58,237,0.1); }
+.vid-item-icon{ flex-shrink:0; color:var(--text3); }
+.vid-item-icon svg{ width:12px; height:12px; }
+.vid-item.active .vid-item-icon{ color:var(--a1); }
+.vid-thumb{
+  width:40px; height:28px; border-radius:3px; object-fit:cover;
+  background:var(--bg4); flex-shrink:0;
+}
+.vid-title{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text2); }
+.vid-item.active .vid-title{ color:var(--text); }
+
 /* ── HEADER ── */
 header{
   position:sticky; top:0; z-index:100;
@@ -544,6 +581,7 @@ const ICONS = {
   calc:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="1" width="12" height="14" rx="2"/><rect x="4.5" y="3" width="7" height="3" rx="1"/><circle cx="5" cy="9" r=".8" fill="currentColor"/><circle cx="8" cy="9" r=".8" fill="currentColor"/><circle cx="11" cy="9" r=".8" fill="currentColor"/><circle cx="5" cy="12" r=".8" fill="currentColor"/><circle cx="8" cy="12" r=".8" fill="currentColor"/><rect x="9.5" y="10.5" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>`,
   pinboard:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l4 4-5.5 1L5 10.5 2 14M10 2L5 7 3.5 11.5"/><circle cx="12" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
+  video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
 };
 
 // card icon bg colors
@@ -551,12 +589,12 @@ const ICON_BG = {
   weather:'rgba(6,182,212,.15)',calendar:'rgba(239,68,68,.15)',shopping:'rgba(245,158,11,.15)',
   watchlist:'rgba(139,92,246,.15)',links:'rgba(6,182,212,.15)',countdown:'rgba(236,72,153,.15)',
   gaming:'rgba(16,185,129,.15)',music:'rgba(251,146,60,.15)',notes:'rgba(234,179,8,.15)',
-  calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',
+  calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',video:'rgba(239,68,68,.15)',
 };
 const ICON_COLOR = {
   weather:'#22d3ee',calendar:'#f87171',shopping:'#fbbf24',watchlist:'#a78bfa',
   links:'#22d3ee',countdown:'#f472b6',gaming:'#34d399',music:'#fb923c',
-  notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',
+  notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',video:'#f87171',
 };
 
 // ── CARD DEFINITIONS ──────────────────────
@@ -573,6 +611,7 @@ const DEFS=[
   {id:'calc',     name:'Rechner',      desc:'Mit Tastatur-Support',    desks:['private','work']},
   {id:'pinboard', name:'Pinnwand',     desc:'Bilder per URL anpinnen', desks:['private']},
   {id:'bloomify', name:'Bloomify',     desc:'Links & Textbausteine',   desks:['work']},
+  {id:'video',    name:'Video Player', desc:'YouTube & direkte URLs',  desks:['private','work']},
 ];
 
 // ── DATA ──────────────────────────────────
@@ -580,7 +619,7 @@ const LS_DATA='zeOS_v1',LS_TOK='zeOS_tok',LS_GID='zeOS_gid';
 const GFNAME='zeke-os.json';
 
 function defCards(desk){
-  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify']};
+  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video']};
   const o={}; m[desk].forEach(id=>o[id]=true); return o;
 }
 function defPos(id,desk){
@@ -731,11 +770,12 @@ function cFooter(id){
     music:`<div class="add-area"><input type="text" id="mu-n" placeholder="Idee / Projekt…" class="flex1"/><select id="mu-s" class="w70"><option>Idee</option><option>WIP</option><option>Fertig</option></select><button class="add-btn" onclick="addMusic()">+</button></div>`,
     calendar:`<div class="add-area"><input type="date" id="ev-d" class="w110"/><input type="text" id="ev-n" placeholder="Termin…" class="flex1"/><button class="add-btn" onclick="addEv()">+</button></div>`,
     pinboard:`<div class="add-area"><input type="url" id="pin-u" placeholder="Bild-URL…" class="flex1"/><input type="text" id="pin-c" placeholder="Beschriftung…" class="w100"/><button class="add-btn" onclick="addPin()">+</button></div>`,
+    video:`<div class="add-area"><input type="url" id="vid-u" placeholder="YouTube-Link oder direkte Video-URL…" class="flex1"/><input type="text" id="vid-t" placeholder="Titel…" class="w100"/><button class="add-btn" onclick="addVid()">+</button></div>`,
   };
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -902,6 +942,69 @@ function rBloomify(cb){
 }
 function copySnip(el,text){navigator.clipboard.writeText(text).then(()=>{el.classList.add('copied');setTimeout(()=>el.classList.remove('copied'),1500);});}
 
+
+// VIDEO PLAYER
+function ytId(url){
+  try{
+    const u=new URL(url);
+    if(u.hostname.includes('youtu.be')) return u.pathname.slice(1);
+    if(u.hostname.includes('youtube')) return u.searchParams.get('v');
+  }catch(e){}
+  return null;
+}
+function isDirectVideo(url){return /\.(mp4|webm|ogg|mov)(\?.*)?$/i.test(url);}
+
+function rVideo(cb){
+  const d=dd(); if(!d.videos)d.videos=[];
+  const active=d.activeVideo||null;
+  let playerHtml='';
+  if(active){
+    const vid=d.videos.find(v=>v.url===active);
+    if(vid){
+      const yt=ytId(vid.url);
+      if(yt){
+        playerHtml=`<iframe src="https://www.youtube.com/embed/${yt}?autoplay=0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>`;
+      } else if(isDirectVideo(vid.url)){
+        playerHtml=`<video controls src="${esc(vid.url)}"></video>`;
+      } else {
+        playerHtml=`<iframe src="${esc(vid.url)}" allowfullscreen></iframe>`;
+      }
+    }
+  } else {
+    playerHtml=`<div class="vid-placeholder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="3" width="14" height="14" rx="2"/><path d="M16 8l6-3v10l-6-3V8z"/><line x1="6" y1="21" x2="18" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+      <span>Video-URL unten eingeben</span>
+    </div>`;
+  }
+
+  const listHtml=d.videos.length?d.videos.map((v,i)=>{
+    const yt=ytId(v.url);
+    const thumb=yt?`<img class="vid-thumb" src="https://img.youtube.com/vi/${yt}/default.jpg" loading="lazy"/>`:`<span class="vid-item-icon"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="2" width="7" height="8" rx="1"/><path d="M8 4.5l3-1.5v6l-3-1.5V4.5z"/></svg></span>`;
+    return`<div class="vid-item${v.url===active?' active':''}" onclick="playVid('${esc(v.url)}')">
+      ${thumb}
+      <span class="vid-title">${esc(v.title||v.url)}</span>
+      <span class="del" style="flex-shrink:0" onclick="event.stopPropagation();delVid(${i})">×</span>
+    </div>`;
+  }).join(''):'<div class="empty">Noch keine Videos</div>';
+
+  cb.innerHTML=`<div class="vid-player">${playerHtml}</div><div class="vid-list">${listHtml}</div>`;
+}
+function playVid(url){dd().activeVideo=url;sched();rfr('video');}
+function addVid(){
+  const u=gv('vid-u'),t=gv('vid-t');if(!u||!u.startsWith('http'))return;
+  const d=dd();if(!d.videos)d.videos=[];
+  d.videos.push({url:u,title:t||u});
+  if(!d.activeVideo)d.activeVideo=u;
+  cl('vid-u');cl('vid-t');sched();rfr('video');
+}
+function delVid(i){
+  const d=dd();
+  const url=d.videos[i]?.url;
+  d.videos.splice(i,1);
+  if(d.activeVideo===url)d.activeVideo=d.videos[0]?.url||null;
+  sched();rfr('video');
+}
+
 // ── DRAG ──────────────────────────────────
 function mkDrag(card){
   const head=card.querySelector('.card-head');
@@ -944,7 +1047,7 @@ function mkResize(card,id){
 }
 
 // ── HELPERS ───────────────────────────────
-function delD(arr,i){const d=dd();if(d[arr])d[arr].splice(i,1);sched();const m={shopping:'shopping',watchlist:'watchlist',links:'links',countdowns:'countdown',games:'gaming',music:'music',pins:'pinboard'};if(m[arr])rfr(m[arr]);}
+function delD(arr,i){const d=dd();if(d[arr])d[arr].splice(i,1);sched();const m={shopping:'shopping',watchlist:'watchlist',links:'links',countdowns:'countdown',games:'gaming',music:'music',pins:'pinboard',videos:'video'};if(m[arr])rfr(m[arr]);}
 function gv(id){const el=document.getElementById(id);return el?el.value.trim():'';}
 function cl(id){const el=document.getElementById(id);if(el)el.value='';}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
