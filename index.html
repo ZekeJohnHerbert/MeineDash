@@ -1413,39 +1413,96 @@ function delStation(i){
 }
 
 
-// ── SPOTIFY ───────────────────────────────
+// ── SPOTIFY (PKCE) ────────────────────────
 const SP_CLIENT_ID = 'e80d0dc23fc3450e998d9f715c8b9509';
 const SP_SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing user-library-read user-top-read playlist-read-private';
 const SP_REDIRECT = window.location.href.split('#')[0].split('?')[0];
 let spToken = null, spTab = 'library', spSearchQ = '', spSearchRes = [], spProgress = null;
 
-function spInit(){
-  // Check for token in URL hash (OAuth callback)
-  const hash = window.location.hash;
-  if(hash.includes('access_token')){
-    const params = new URLSearchParams(hash.slice(1));
-    spToken = params.get('access_token');
-    localStorage.setItem('bc_sp_tok', spToken);
+// PKCE helpers
+async function spGenChallenge(){
+  const arr = crypto.getRandomValues(new Uint8Array(32));
+  const verifier = btoa(String.fromCharCode(...arr)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  const challenge = btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  return { verifier, challenge };
+}
+
+async function spLogin(){
+  const { verifier, challenge } = await spGenChallenge();
+  localStorage.setItem('bc_sp_cv', verifier);
+  const url = 'https://accounts.spotify.com/authorize' +
+    '?client_id=' + SP_CLIENT_ID +
+    '&response_type=code' +
+    '&redirect_uri=' + encodeURIComponent(SP_REDIRECT) +
+    '&scope=' + encodeURIComponent(SP_SCOPES) +
+    '&code_challenge_method=S256' +
+    '&code_challenge=' + challenge;
+  window.location.href = url;
+}
+
+async function spExchangeCode(code){
+  const verifier = localStorage.getItem('bc_sp_cv');
+  if(!verifier) return;
+  const r = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code,
+      redirect_uri: SP_REDIRECT,
+      client_id: SP_CLIENT_ID,
+      code_verifier: verifier
+    })
+  });
+  if(!r.ok) return;
+  const d = await r.json();
+  spToken = d.access_token;
+  localStorage.setItem('bc_sp_tok', spToken);
+  localStorage.setItem('bc_sp_ref', d.refresh_token);
+  localStorage.setItem('bc_sp_exp', Date.now() + (d.expires_in - 60) * 1000);
+  localStorage.removeItem('bc_sp_cv');
+}
+
+async function spRefreshToken(){
+  const ref = localStorage.getItem('bc_sp_ref');
+  if(!ref) return false;
+  const r = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: ref, client_id: SP_CLIENT_ID })
+  });
+  if(!r.ok) return false;
+  const d = await r.json();
+  spToken = d.access_token;
+  localStorage.setItem('bc_sp_tok', spToken);
+  if(d.refresh_token) localStorage.setItem('bc_sp_ref', d.refresh_token);
+  localStorage.setItem('bc_sp_exp', Date.now() + (d.expires_in - 60) * 1000);
+  return true;
+}
+
+async function spEnsureToken(){
+  const exp = parseInt(localStorage.getItem('bc_sp_exp')||'0');
+  if(Date.now() > exp){ const ok = await spRefreshToken(); if(!ok){ spToken=null; return false; } }
+  return !!spToken;
+}
+
+async function spInit(){
+  // PKCE callback: code in URL params
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if(code){
     window.history.replaceState(null, '', window.location.pathname);
+    await spExchangeCode(code);
   } else {
     spToken = localStorage.getItem('bc_sp_tok');
   }
   if(spToken) spStartPolling();
 }
 
-function spLogin(){
-  const url = 'https://accounts.spotify.com/authorize' +
-    '?client_id=' + SP_CLIENT_ID +
-    '&response_type=token' +
-    '&redirect_uri=' + encodeURIComponent(SP_REDIRECT) +
-    '&scope=' + encodeURIComponent(SP_SCOPES) +
-    '&show_dialog=false';
-  window.location.href = url;
-}
-
 function spLogout(){
   spToken = null;
-  localStorage.removeItem('bc_sp_tok');
+  ['bc_sp_tok','bc_sp_ref','bc_sp_exp','bc_sp_cv'].forEach(k=>localStorage.removeItem(k));
   clearInterval(spPollI);
   rfr('spotify');
 }
@@ -1459,12 +1516,13 @@ function spStartPolling(){
 
 let spNowPlaying = null;
 async function spPollNow(){
-  if(!spToken) return;
+  if(!await spEnsureToken()) return;
   try {
     const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
       headers: { Authorization: 'Bearer ' + spToken }
     });
-    if(r.status === 204 || r.status === 401){ if(r.status===401){spToken=null;localStorage.removeItem('bc_sp_tok');} spNowPlaying=null; rfr('spotify'); return; }
+    if(r.status === 204){ spNowPlaying=null; rfr('spotify'); return; }
+    if(r.status === 401){ const ok=await spRefreshToken(); if(!ok){spToken=null;} rfr('spotify'); return; }
     if(!r.ok) return;
     const d = await r.json();
     spNowPlaying = d;
