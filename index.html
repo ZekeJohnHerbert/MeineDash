@@ -723,6 +723,7 @@ const ICONS = {
   notes:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="1.5" width="12" height="13" rx="2"/><line x1="5" y1="5" x2="11" y2="5"/><line x1="5" y1="8" x2="11" y2="8"/><line x1="5" y1="11" x2="8" y2="11"/></svg>`,
   calc:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="1" width="12" height="14" rx="2"/><rect x="4.5" y="3" width="7" height="3" rx="1"/><circle cx="5" cy="9" r=".8" fill="currentColor"/><circle cx="8" cy="9" r=".8" fill="currentColor"/><circle cx="11" cy="9" r=".8" fill="currentColor"/><circle cx="5" cy="12" r=".8" fill="currentColor"/><circle cx="8" cy="12" r=".8" fill="currentColor"/><rect x="9.5" y="10.5" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>`,
   pinboard:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l4 4-5.5 1L5 10.5 2 14M10 2L5 7 3.5 11.5"/><circle cx="12" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
+  mp3:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 10V6l4 2-4 2z" fill="currentColor" stroke="none"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
   video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
   radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L10 2"/><circle cx="11.5" cy="11.5" r="1.5"/><line x1="4" y1="10" x2="4" y2="12"/><line x1="7" y1="10" x2="7" y2="13"/></svg>`,
@@ -731,13 +732,13 @@ const ICONS = {
 
 // card icon bg colors
 const ICON_BG = {
-  weather:'rgba(6,182,212,.15)',calendar:'rgba(239,68,68,.15)',shopping:'rgba(245,158,11,.15)',
+  weather:'rgba(6,182,212,.15)',calendar:'rgba(239,68,68,.15)',shopping:'rgba(245,158,11,.15)',mp3:'rgba(168,85,247,.15)',
   watchlist:'rgba(139,92,246,.15)',links:'rgba(6,182,212,.15)',countdown:'rgba(236,72,153,.15)',
   gaming:'rgba(16,185,129,.15)',music:'rgba(251,146,60,.15)',notes:'rgba(234,179,8,.15)',
   calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',video:'rgba(239,68,68,.15)',radio:'rgba(6,182,212,.15)',radio:'rgba(6,182,212,.15)',
 };
 const ICON_COLOR = {
-  weather:'#22d3ee',calendar:'#f87171',shopping:'#fbbf24',watchlist:'#a78bfa',
+  weather:'#22d3ee',calendar:'#f87171',shopping:'#fbbf24',watchlist:'#a78bfa',mp3:'#a855f7',
   links:'#22d3ee',countdown:'#f472b6',gaming:'#34d399',music:'#fb923c',
   notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',video:'#f87171',radio:'#22d3ee',radio:'#22d3ee',
 };
@@ -758,7 +759,7 @@ const DEFS=[
   {id:'bloomify', name:'Bloomify',     desc:'Links & Textbausteine',   desks:['work']},
   {id:'video',    name:'Video Player', desc:'YouTube & direkte URLs',  desks:['private','work']},
   {id:'radio',    name:'Internet Radio', desc:'Sender streamen',        desks:['private','work']},
-  {id:'radio',    name:'Radio',        desc:'Internetradio Streams',   desks:['private','work']},
+  {id:'mp3',      name:'MP3 Player',    desc:'Cloud-Dateien abspielen',  desks:['private','work']},
 ];
 
 // ── DATA ──────────────────────────────────
@@ -766,7 +767,7 @@ const LS_DATA='zeOS_v1',LS_TOK='zeOS_tok',LS_GID='zeOS_gid';
 const GFNAME='zeke-os.json';
 
 function defCards(desk){
-  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video','radio']};
+  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video','radio','mp3']};
   const o={}; m[desk].forEach(id=>o[id]=true); return o;
 }
 function defPos(id,desk){
@@ -919,13 +920,13 @@ function cFooter(id){
     calendar:`<div class="add-area"><input type="date" id="ev-d" class="w110"/><input type="text" id="ev-n" placeholder="Termin…" class="flex1"/><button class="add-btn" onclick="addEv()">+</button></div>`,
     pinboard:`<div class="add-area"><input type="url" id="pin-u" placeholder="Bild-URL…" class="flex1"/><input type="text" id="pin-c" placeholder="Beschriftung…" class="w100"/><button class="add-btn" onclick="addPin()">+</button></div>`,
     video:`<div class="add-area"><input type="url" id="vid-u" placeholder="YouTube-Link oder direkte Video-URL…" class="flex1"/><input type="text" id="vid-t" placeholder="Titel…" class="w100"/><button class="add-btn" onclick="addVid()">+</button></div>`,
-    radio:`<div class="add-area"><input type="url" id="rad-u" placeholder="Stream-URL (https://…/stream)" class="flex1"/><input type="text" id="rad-n" placeholder="Sendername…" class="w100"/><button class="add-btn" onclick="addStation()">+</button></div>`,
     radio:`<div class="add-area"><input type="url" id="rad-u" placeholder="Stream-URL (https://…)" class="flex1"/><input type="text" id="rad-n" placeholder="Name…" class="w80"/><input type="text" id="rad-g" placeholder="Genre…" class="w70"/><button class="add-btn" onclick="addStation()">+</button></div>`,
+    mp3:`<div class="add-area"><input type="url" id="mp3-u" placeholder="Direkte MP3/Audio-URL aus Cloud…" class="flex1"/><input type="text" id="mp3-t" placeholder="Titel…" class="w100"/><button class="add-btn" onclick="addMp3()">+</button></div>`,
   };
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -1181,138 +1182,16 @@ function delVid(i){
 }
 
 
-// ── RADIO ─────────────────────────────────
-// global audio element – persists across re-renders
-let _radioAudio = null;
-let _radioPlaying = false;
-
-const DEFAULT_STATIONS = [
-  {name:'1LIVE',        url:'https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3',  genre:'Pop/Rock'},
-  {name:'Bayern 3',     url:'https://dispatcher.rndfnk.com/br/br3/live/mp3/mid',                           genre:'Pop'},
-  {name:'Radio Bob',    url:'https://streams.radiobob.de/bob-national/mp3-192/mediaplayer',                genre:'Rock'},
-  {name:'Deutschlandfunk',url:'https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3',                  genre:'News'},
-  {name:'Jazz Radio',   url:'https://jazz-wr05.ice.infomaniak.ch/jazz-wr05-128.mp3',                       genre:'Jazz'},
-  {name:'Lofi Hip Hop', url:'https://listen.moe/stream',                                                   genre:'Lofi'},
-];
-
-function rRadio(cb){
-  const d=dd();
-  if(!d.stations) d.stations=[...DEFAULT_STATIONS];
-  if(d.activeStation===undefined) d.activeStation=null;
-
-  const active = d.stations.find(s=>s.url===d.activeStation);
-
-  const listHtml = d.stations.map((s,i)=>`
-    <div class="radio-item${s.url===d.activeStation?' active':''}" onclick="tuneStation('${esc(s.url)}')">
-      <div class="radio-item-dot"></div>
-      <span class="radio-item-name">${esc(s.name)}</span>
-      <span class="radio-item-genre">${esc(s.genre||'')}</span>
-      <span class="del" onclick="event.stopPropagation();delStation(${i})">×</span>
-    </div>`).join('');
-
-  cb.innerHTML=`
-    <div class="radio-player">
-      <div class="radio-now">
-        <div class="radio-vis${_radioPlaying?' playing':''}">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-            <rect x="1" y="7" width="14" height="8" rx="2"/>
-            <path d="M4 7L9 2l5 5"/>
-            <circle cx="11.5" cy="11" r="1.5" fill="currentColor" stroke="none"/>
-            <line x1="3" y1="11" x2="7" y2="11"/>
-          </svg>
-        </div>
-        <div class="radio-info">
-          <div class="radio-station">${active?esc(active.name):'Kein Sender'}</div>
-          <div class="radio-status${_radioPlaying?' live':''}">${_radioPlaying?'▶ Live':'Pausiert'}</div>
-        </div>
-        <div class="radio-controls">
-          <input type="range" class="radio-vol" id="rad-vol" min="0" max="1" step="0.05" value="${_radioAudio?_radioAudio.volume:0.8}" oninput="setVol(this.value)" style="width:70px"/>
-          <button class="radio-play" onclick="toggleRadio()">
-            ${_radioPlaying
-              ? `<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>`
-              : `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>`
-            }
-          </button>
-        </div>
-      </div>
-      <div class="radio-list">${listHtml}</div>
-    </div>`;
-}
-
-function tuneStation(url){
-  const d=dd(); d.activeStation=url;
-  if(_radioAudio){ _radioAudio.pause(); _radioAudio=null; }
-  _radioPlaying=false;
-  sched(); rfr('radio');
-  // auto-play on tune
-  setTimeout(()=>startRadio(url), 80);
-}
-
-function startRadio(url){
-  if(_radioAudio){ _radioAudio.pause(); _radioAudio=null; }
-  _radioAudio = new Audio(url);
-  _radioAudio.volume = parseFloat(document.getElementById('rad-vol')?.value||0.8);
-  _radioAudio.crossOrigin='anonymous';
-  _radioAudio.play().then(()=>{
-    _radioPlaying=true; rfr('radio');
-  }).catch(()=>{
-    _radioPlaying=false; rfr('radio');
-  });
-  _radioAudio.addEventListener('error',()=>{ _radioPlaying=false; rfr('radio'); });
-}
-
-function toggleRadio(){
-  const d=dd();
-  if(!d.activeStation) return;
-  if(_radioPlaying && _radioAudio){
-    _radioAudio.pause(); _radioPlaying=false; rfr('radio');
-  } else {
-    startRadio(d.activeStation);
-  }
-}
-
-function setVol(v){
-  if(_radioAudio) _radioAudio.volume=parseFloat(v);
-}
-
-function addStation(){
-  const u=gv('rad-u'),n=gv('rad-n'),g=gv('rad-g');
-  if(!u||!u.startsWith('http'))return;
-  const d=dd(); if(!d.stations)d.stations=[];
-  d.stations.push({name:n||u,url:u,genre:g});
-  cl('rad-u');cl('rad-n');cl('rad-g');
-  sched(); rfr('radio');
-}
-
-function delStation(i){
-  const d=dd();
-  const url=d.stations[i]?.url;
-  if(url===d.activeStation){ if(_radioAudio){_radioAudio.pause();_radioAudio=null;}_radioPlaying=false; d.activeStation=null; }
-  d.stations.splice(i,1);
-  sched(); rfr('radio');
-}
-
 
 // ── INTERNET RADIO ────────────────────────
 let radioAudio = null;
 let radioPlaying = false;
 
 // built-in preset stations
-const PRESET_STATIONS = [
-  {name:'WKNR ESPN Cleveland', url:'https://14793.live.streamtheworld.com/WKNRAM.mp3', genre:'Sports Talk'},
-  {name:'1Live',               url:'https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3', genre:'Pop / NRW'},
-  {name:'ByteFM',              url:'https://www.byte.fm/stream/bytefm.m3u', genre:'Indie / Alternative'},
-  {name:'Jazz Radio',          url:'https://jazz-wr05.ice.infomaniak.ch/jazz-wr05-128.mp3', genre:'Jazz'},
-  {name:'Radio Swiss Jazz',    url:'https://stream.srg-ssr.ch/m/rsj/mp3_128', genre:'Jazz'},
-  {name:'Chillhop Radio',      url:'https://streams.fluxfm.de/Chillhop/mp3-128/streams.fluxfm.de/', genre:'Lo-Fi / Chill'},
-];
-
 function rRadio(cb){
   const d=dd(); if(!d.stations) d.stations=[];
-  const allStations=[...PRESET_STATIONS,...d.stations];
   const active=d.activeStation||null;
-  const activeS=allStations.find(s=>s.url===active);
-
+  const activeS=d.stations.find(s=>s.url===active);
   cb.innerHTML=`
     <div class="radio-now">
       <div class="radio-visualizer${radioPlaying?' ':' paused'}">
@@ -1321,30 +1200,28 @@ function rRadio(cb){
         <div class="radio-bar"></div>
       </div>
       <div style="flex:1;min-width:0">
-        <div class="radio-name">${activeS?esc(activeS.name):'Kein Sender ausgewählt'}</div>
+        <div class="radio-name">${activeS?esc(activeS.name):'Kein Sender'}</div>
         <div class="radio-genre">${activeS?esc(activeS.genre||''):'–'}</div>
       </div>
     </div>
     <div class="radio-controls">
-      <button class="radio-play" onclick="toggleRadio()" id="radio-play-btn">
+      <button class="radio-play" onclick="toggleRadio()">
         ${radioPlaying
-          ? `<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>`
-          : `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>`}
+          ? '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>'
+          : '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>'}
       </button>
-      <input type="range" class="radio-vol" id="radio-vol" min="0" max="100" value="${d.volume??70}"
-        oninput="setVol(this.value)" style="--vol:${d.volume??70}%">
+      <input type="range" class="radio-vol" min="0" max="100" value="${d.volume??70}" oninput="setVol(this.value)" style="--vol:${d.volume??70}%">
     </div>
-    <div class="radio-stations">
-      ${allStations.map((s,i)=>`
-        <div class="rstation${s.url===active?' active':''}" onclick="selectStation('${esc(s.url)}','${esc(s.name)}','${esc(s.genre||'')}')">
-          <div class="rstation-dot"></div>
-          <div class="rstation-info">
-            <div class="rstation-name">${esc(s.name)}</div>
-            <div class="rstation-url">${esc(s.genre||s.url)}</div>
-          </div>
-          ${i>=PRESET_STATIONS.length?`<span class="del" onclick="event.stopPropagation();delStation(${i-PRESET_STATIONS.length})">×</span>`:''}
-        </div>`).join('')}
-    </div>`;
+    ${d.stations.length ? '<div class="radio-stations">'+d.stations.map((s,i)=>`
+      <div class="rstation${s.url===active?' active':''}" onclick="selectStation('${esc(s.url)}','${esc(s.name)}','${esc(s.genre||'')}')">
+        <div class="rstation-dot"></div>
+        <div class="rstation-info">
+          <div class="rstation-name">${esc(s.name)}</div>
+          <div class="rstation-url">${esc(s.genre||s.url)}</div>
+        </div>
+        <span class="del" onclick="event.stopPropagation();delStation(${i})">×</span>
+      </div>`).join('')+'</div>'
+    : '<div class="empty">Noch keine Sender.</div>'}`;
 }
 
 function selectStation(url,name,genre){
@@ -1397,7 +1274,97 @@ function delStation(i){
 }
 
 
-// ── DRAG ──────────────────────────────────
+// ── MP3 CLOUD PLAYER ──────────────────────
+let mp3Audio = null, mp3Playing = false, mp3Idx = null;
+
+function rMp3(cb){
+  const d=dd(); if(!d.mp3tracks) d.mp3tracks=[];
+  const t = mp3Idx!==null ? d.mp3tracks[mp3Idx] : null;
+  cb.innerHTML=`
+    <div class="radio-now" style="margin-bottom:8px">
+      <div class="radio-visualizer${mp3Playing?' ':' paused'}">
+        <div class="radio-bar"></div><div class="radio-bar"></div>
+        <div class="radio-bar"></div><div class="radio-bar"></div>
+        <div class="radio-bar"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="radio-name">${t?esc(t.title||t.url):'Kein Track'}</div>
+        <div class="radio-genre" id="mp3-time">–</div>
+      </div>
+    </div>
+    <div style="margin-bottom:8px">
+      <div style="height:3px;background:var(--surface3);border-radius:2px;cursor:pointer" onclick="mp3Seek(event,this)" id="mp3-prog">
+        <div id="mp3-bar" style="height:100%;background:var(--accent);border-radius:2px;width:0%"></div>
+      </div>
+    </div>
+    <div class="radio-controls" style="justify-content:center;gap:16px;margin-bottom:10px">
+      <button class="radio-play" onclick="mp3Skip(-1)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M3 2h1.5v5.1L13 2v12L4.5 8.9V14H3V2z"/></svg></button>
+      <button class="radio-play" onclick="mp3Toggle()" style="width:36px;height:36px">
+        ${mp3Playing
+          ? '<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>'
+          : '<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>'}
+      </button>
+      <button class="radio-play" onclick="mp3Skip(1)"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 2h-1.5v5.1L3 2v12l8.5-5.1V14H13V2z"/></svg></button>
+      <input type="range" class="radio-vol" min="0" max="100" value="${d.mp3vol??80}" oninput="mp3SetVol(this.value)" style="--vol:${d.mp3vol??80}%;width:80px">
+    </div>
+    ${d.mp3tracks.length ? '<div class="radio-stations">'+d.mp3tracks.map((tr,i)=>`
+      <div class="rstation${i===mp3Idx?' active':''}" onclick="mp3Play(${i})">
+        <div class="rstation-dot"></div>
+        <div class="rstation-info">
+          <div class="rstation-name">${esc(tr.title||tr.url)}</div>
+          <div class="rstation-url" style="font-size:9px">${esc(tr.url.slice(0,50))}…</div>
+        </div>
+        <span class="del" onclick="event.stopPropagation();delMp3(${i})">×</span>
+      </div>`).join('')+'</div>'
+    : '<div class="empty">Cloud-URL hinzufügen (Dropbox, OneDrive direkt-Link…)</div>'}`;
+  mp3UpdateProgress();
+}
+
+function mp3Play(i){
+  const d=dd(); if(!d.mp3tracks[i]) return;
+  mp3Idx=i; mp3Playing=false;
+  if(mp3Audio){mp3Audio.pause();mp3Audio=null;}
+  mp3Audio=new Audio(d.mp3tracks[i].url);
+  mp3Audio.volume=(d.mp3vol??80)/100;
+  mp3Audio.addEventListener('timeupdate',mp3UpdateProgress);
+  mp3Audio.addEventListener('ended',()=>mp3Skip(1));
+  mp3Audio.play().then(()=>{mp3Playing=true;rfr('mp3');}).catch(()=>{});
+  rfr('mp3');
+}
+
+function mp3Toggle(){
+  if(mp3Idx===null){ const d=dd(); if(d.mp3tracks.length) mp3Play(0); return; }
+  if(!mp3Audio) { mp3Play(mp3Idx); return; }
+  if(mp3Playing){ mp3Audio.pause(); mp3Playing=false; }
+  else { mp3Audio.play(); mp3Playing=true; }
+  rfr('mp3');
+}
+
+function mp3Skip(dir){
+  const d=dd(); if(!d.mp3tracks.length) return;
+  const next = mp3Idx===null ? 0 : (mp3Idx+dir+d.mp3tracks.length)%d.mp3tracks.length;
+  mp3Play(next);
+}
+
+function mp3SetVol(v){ const d=dd();d.mp3vol=parseInt(v);if(mp3Audio)mp3Audio.volume=v/100;sched(); }
+
+function mp3UpdateProgress(){
+  if(!mp3Audio) return;
+  const pct = mp3Audio.duration ? (mp3Audio.currentTime/mp3Audio.duration*100) : 0;
+  const bar=document.getElementById('mp3-bar'); if(bar) bar.style.width=pct+'%';
+  const time=document.getElementById('mp3-time');
+  if(time && mp3Audio.duration){
+    const fmt=s=>Math.floor(s/60)+':'+(Math.floor(s%60)<10?'0':'')+Math.floor(s%60);
+    time.textContent=fmt(mp3Audio.currentTime)+' / '+fmt(mp3Audio.duration);
+  }
+}
+
+function mp3Seek(e,el){ if(mp3Audio&&mp3Audio.duration) mp3Audio.currentTime=(e.offsetX/el.offsetWidth)*mp3Audio.duration; }
+
+function addMp3(){ const u=gv('mp3-u'),t=gv('mp3-t'); if(!u||!u.startsWith('http'))return; const d=dd();if(!d.mp3tracks)d.mp3tracks=[];d.mp3tracks.push({url:u,title:t||u.split('/').pop()});cl('mp3-u');cl('mp3-t');sched();rfr('mp3'); }
+function delMp3(i){ const d=dd();if(mp3Idx===i){if(mp3Audio)mp3Audio.pause();mp3Audio=null;mp3Playing=false;mp3Idx=null;}else if(mp3Idx>i)mp3Idx--;d.mp3tracks.splice(i,1);sched();rfr('mp3'); }
+
+
 function mkDrag(card){
   const head=card.querySelector('.card-head');
   let ox,oy,dragging=false;
