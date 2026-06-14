@@ -1456,7 +1456,7 @@ async function spLogin(){
 
 async function spExchangeCode(code){
   const verifier = localStorage.getItem('bc_sp_cv');
-  if(!verifier) return;
+  if(!verifier){ localStorage.setItem('bc_sp_dbg','FEHLER: kein code_verifier'); return; }
   const r = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -1468,13 +1468,14 @@ async function spExchangeCode(code){
       code_verifier: verifier
     })
   });
-  if(!r.ok) return;
+  if(!r.ok){ const t=await r.text(); localStorage.setItem('bc_sp_dbg','Token-Fehler '+r.status+': '+t.slice(0,120)); return; }
   const d = await r.json();
   spToken = d.access_token;
   localStorage.setItem('bc_sp_tok', spToken);
   localStorage.setItem('bc_sp_ref', d.refresh_token);
   localStorage.setItem('bc_sp_exp', Date.now() + (d.expires_in - 60) * 1000);
   localStorage.removeItem('bc_sp_cv');
+  localStorage.setItem('bc_sp_dbg','OK: Token gesetzt');
 }
 
 async function spRefreshToken(){
@@ -1822,10 +1823,12 @@ async function rSpotify(cb){
 }
 
 function spLoginHTML(){
+  const dbg = localStorage.getItem('bc_sp_dbg')||'';
   return `<div class="sp-login">
     <div class="sp-login-logo"><svg viewBox="0 0 32 32" fill="currentColor" width="48" height="48"><path d="M16 0C7.16 0 0 7.16 0 16s7.16 16 16 16 16-7.16 16-16S24.84 0 16 0zm7.33 23.07c-.3.46-.92.62-1.38.32-3.79-2.32-8.57-2.84-14.2-1.56-.54.12-1.08-.22-1.2-.76-.12-.54.22-1.08.76-1.2 6.15-1.4 11.43-.8 15.7 1.81.46.3.62.92.32 1.38zm1.95-4.35c-.38.57-1.14.78-1.74.4-4.34-2.67-10.96-3.44-16.1-1.88-.62.18-1.28-.18-1.46-.8-.18-.62.18-1.28.8-1.46 5.86-1.78 13.15-.92 18.1 2.15.57.38.78 1.14.4 1.74zm.17-4.53c-5.21-3.1-13.83-3.38-18.81-1.87-.74.22-1.52-.2-1.74-.94-.22-.74.2-1.52.94-1.74 5.72-1.74 15.23-1.4 21.24 2.16.66.4.9 1.26.5 1.94-.4.67-1.26.9-1.94.5z"/></svg></div>
     <div style="font-size:13px;color:var(--text3);text-align:center">Mit Spotify verbinden um<br>Musik direkt zu steuern.</div>
     <button class="sp-login-btn" onclick="spLogin()">MIT SPOTIFY VERBINDEN</button>
+    ${dbg ? `<div style="font-size:10px;color:#f87171;background:rgba(239,68,68,.1);padding:6px 8px;border-radius:6px;margin-top:8px;word-break:break-all">${esc(dbg)}</div>` : ''}
   </div>`;
 }
 
