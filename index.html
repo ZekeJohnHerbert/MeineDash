@@ -922,6 +922,7 @@ function renderDesk(){
     const p=ds.pos[def.id];
     el.style.left=p.x+'px';el.style.top=p.y+'px';
     if(p.w)el.style.width=p.w+'px';
+    if(p.h)el.style.height=p.h+'px';
     rContent(def.id,el);
   });
 }
@@ -1508,6 +1509,7 @@ function spLogout(){
 }
 
 let spPollI = null;
+function spRfr(){ if(document.activeElement?.id==='sp-q') return; rfr('spotify'); }
 function spStartPolling(){
   clearInterval(spPollI);
   spPollI = setInterval(spPollNow, 5000);
@@ -1521,12 +1523,12 @@ async function spPollNow(){
     const r = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
       headers: { Authorization: 'Bearer ' + spToken }
     });
-    if(r.status === 204){ spNowPlaying=null; rfr('spotify'); return; }
-    if(r.status === 401){ const ok=await spRefreshToken(); if(!ok){spToken=null;} rfr('spotify'); return; }
+    if(r.status === 204){ spNowPlaying=null; spRfr(); return; }
+    if(r.status === 401){ const ok=await spRefreshToken(); if(!ok){spToken=null;} spRfr(); return; }
     if(!r.ok) return;
     const d = await r.json();
     spNowPlaying = d;
-    rfr('spotify');
+    spRfr();
   } catch(e){}
 }
 
@@ -1742,11 +1744,15 @@ function mkDrag(card){
 // ── RESIZE ────────────────────────────────
 function mkResize(card,id){
   const h=card.querySelector('.card-resize'); if(!h)return;
-  let sx,sw;
+  let sx,sy,sw,sh;
   h.addEventListener('mousedown',e=>{
-    e.preventDefault();e.stopPropagation(); sx=e.clientX; sw=card.offsetWidth;
-    const mm=e2=>{card.style.width=Math.max(220,sw+(e2.clientX-sx))+'px';};
-    const mu=()=>{D[cur].pos[id]={...D[cur].pos[id],w:card.offsetWidth};sched();document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
+    e.preventDefault();e.stopPropagation();
+    sx=e.clientX; sy=e.clientY; sw=card.offsetWidth; sh=card.offsetHeight;
+    const mm=e2=>{
+      card.style.width=Math.max(220,sw+(e2.clientX-sx))+'px';
+      card.style.height=Math.max(120,sh+(e2.clientY-sy))+'px';
+    };
+    const mu=()=>{D[cur].pos[id]={...D[cur].pos[id],w:card.offsetWidth,h:card.offsetHeight};sched();document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
     document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
   });
 }
