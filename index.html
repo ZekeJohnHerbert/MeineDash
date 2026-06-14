@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeke's Dashboard</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #f0ede8;
+  --text: #1a1814;
+  --text2: #6b6560;
+  --text3: #a09890;
+  --surface: #faf9f7;
+  --border: rgba(0,0,0,0.08);
+  --border-mid: rgba(0,0,0,0.14);
+  --radius: 14px;
+  --radius-sm: 8px;
+  --radius-xs: 5px;
+  --accent: #6c63ff;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+/* ── HEADER ── */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.5rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  gap: 12px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark {
+  width: 28px; height: 28px; border-radius: 7px;
+  background: linear-gradient(135deg, #6c63ff, #e040fb);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; }
+header .sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+
+.header-right { display: flex; align-items: center; gap: 10px; }
+
+#clock {
+  font-size: 13px; color: var(--text2); font-variant-numeric: tabular-nums;
+  background: var(--bg); padding: 5px 10px; border-radius: 20px; border: 1px solid var(--border-mid);
+  white-space: nowrap;
+}
+
+/* sync status */
+#sync-status {
+  font-size: 12px; padding: 4px 10px; border-radius: 20px;
+  border: 1px solid var(--border-mid); background: var(--bg);
+  color: var(--text2); cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 5px; transition: background .15s;
+}
+#sync-status:hover { background: #ede7f6; }
+.sync-dot {
+  width: 7px; height: 7px; border-radius: 50%; background: var(--text3); flex-shrink: 0;
+}
+.sync-dot.ok { background: #4caf50; }
+.sync-dot.err { background: #e53935; }
+.sync-dot.busy { background: #ff9800; animation: pulse .8s ease-in-out infinite alternate; }
+@keyframes pulse { from { opacity: .4; } to { opacity: 1; } }
+
+/* ── MODAL ── */
+.modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; padding: 1rem;
+}
+.modal-bg.hidden { display: none; }
+.modal {
+  background: var(--surface); border-radius: var(--radius);
+  padding: 1.5rem; max-width: 440px; width: 100%;
+  border: 1px solid var(--border-mid);
+}
+.modal h3 { font-size: 16px; font-weight: 600; margin-bottom: 6px; }
+.modal p { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
+.modal a { color: var(--accent); }
+.modal-steps {
+  background: var(--bg); border-radius: var(--radius-sm);
+  padding: 12px 14px; font-size: 13px; line-height: 1.8;
+  margin-bottom: 14px; border: 1px solid var(--border);
+}
+.modal-steps b { color: var(--text); }
+.modal-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.modal-row input {
+  flex: 1; font-size: 13px; padding: 7px 10px;
+  border: 1px solid var(--border-mid); border-radius: var(--radius-xs);
+  background: var(--bg); color: var(--text); font-family: inherit; outline: none;
+}
+.modal-row input:focus { border-color: var(--accent); }
+.btn-primary {
+  padding: 7px 16px; font-size: 13px; font-weight: 600;
+  border: none; border-radius: var(--radius-xs);
+  background: var(--accent); color: #fff; cursor: pointer;
+}
+.btn-primary:hover { opacity: .9; }
+.btn-ghost {
+  padding: 7px 14px; font-size: 13px;
+  border: 1px solid var(--border-mid); border-radius: var(--radius-xs);
+  background: transparent; color: var(--text2); cursor: pointer;
+}
+.btn-ghost:hover { background: var(--bg); }
+.modal-error { font-size: 12px; color: #e53935; margin-top: 6px; min-height: 16px; }
+
+/* ── GRID ── */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(295px, 1fr));
+  gap: 16px; padding: 1.25rem 1.5rem;
+  max-width: 1320px; margin: 0 auto;
+}
+
+/* ── CARDS ── */
+.card { background: var(--surface); border-radius: var(--radius); overflow: hidden; border: 1px solid rgba(0,0,0,0.06); }
+.card-head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 13px 15px 11px; border-bottom: 1px solid rgba(0,0,0,0.07);
+}
+.card-icon {
+  width: 30px; height: 30px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; flex-shrink: 0; background: #fff;
+}
+.card-head h2 { font-size: 14px; font-weight: 600; flex: 1; letter-spacing: -0.01em; }
+
+.theme-weather .card-head { background: linear-gradient(135deg,#e3f2fd,#fce4ec); }
+.theme-shop    .card-head { background: linear-gradient(135deg,#fff8e1,#ffe0b2); }
+.theme-watch   .card-head { background: linear-gradient(135deg,#e8eaf6,#ede7f6); }
+.theme-links   .card-head { background: linear-gradient(135deg,#e0f7fa,#e0f2f1); }
+.theme-countdown .card-head { background: linear-gradient(135deg,#fce4ec,#f3e5f5); }
+.theme-gaming  .card-head { background: linear-gradient(135deg,#e8f5e9,#f1f8e9); }
+.theme-music   .card-head { background: linear-gradient(135deg,#fff3e0,#fbe9e7); }
+.theme-notes   .card-head { background: linear-gradient(135deg,#f9fbe7,#fffde7); }
+.theme-calc    .card-head { background: linear-gradient(135deg,#e8eaf6,#e3f2fd); }
+
+.badge { font-size:11px; font-weight:600; padding:2px 8px; border-radius:20px; background:rgba(0,0,0,.1); color:var(--text2); }
+.card-body { padding: 10px 15px; }
+
+/* rows */
+.row { display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.row:last-child { border-bottom:none; }
+.row-label { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.row-label a { color:#4a6cf7; text-decoration:none; }
+.row-label a:hover { text-decoration:underline; }
+.del { cursor:pointer; color:var(--text3); font-size:17px; line-height:1; flex-shrink:0; opacity:.5; transition:opacity .15s; }
+.del:hover { opacity:1; color:#e53935; }
+
+/* add area */
+.add-area { padding:10px 15px; border-top:1px solid var(--border); display:flex; gap:6px; flex-wrap:wrap; background:rgba(0,0,0,.015); }
+input[type=text], input[type=url], input[type=date], select, textarea {
+  font-size:13px; padding:5px 9px; border:1px solid var(--border-mid);
+  border-radius:var(--radius-xs); background:var(--surface); color:var(--text);
+  font-family:inherit; outline:none; transition:border-color .15s;
+}
+input:focus, select:focus, textarea:focus { border-color:var(--accent); }
+button.add-btn {
+  padding:5px 12px; font-size:14px; font-weight:600; border:none;
+  border-radius:var(--radius-xs); background:var(--accent); color:#fff;
+  cursor:pointer; flex-shrink:0; transition:background .15s,transform .1s;
+}
+button.add-btn:hover { background:#5a52e0; }
+button.add-btn:active { transform:scale(0.96); }
+
+/* pills */
+.pill { font-size:11px; font-weight:500; padding:2px 8px; border-radius:20px; flex-shrink:0; }
+.pill-green  { background:#e8f5e9; color:#2e7d32; }
+.pill-amber  { background:#fff8e1; color:#e65100; }
+.pill-purple { background:#ede7f6; color:#6a1b9a; }
+.pill-blue   { background:#e3f2fd; color:#1565c0; }
+.pill-gray   { background:#f5f5f5; color:#616161; }
+
+.star { cursor:pointer; font-size:15px; color:#ffb300; flex-shrink:0; }
+.section-label { font-size:10px; font-weight:600; text-transform:uppercase; letter-spacing:.07em; color:var(--text3); padding:9px 0 3px; }
+
+/* weather */
+.weather-row { display:flex; align-items:center; gap:16px; padding:10px 0 6px; }
+.weather-temp { font-size:42px; font-weight:200; letter-spacing:-0.04em; }
+.weather-emoji { font-size:34px; }
+.weather-desc { font-size:14px; font-weight:500; }
+.weather-meta { font-size:12px; color:var(--text2); margin-top:3px; line-height:1.6; }
+
+/* countdown */
+.cd-item { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13px; }
+.cd-item:last-child { border-bottom:none; }
+.cd-bubble { min-width:44px; text-align:center; padding:3px 6px; border-radius:8px; background:linear-gradient(135deg,#e040fb22,#6c63ff22); border:1px solid #d8b4fe; flex-shrink:0; }
+.cd-bubble.past { background:#f5f5f5; border-color:#ddd; }
+.cd-days { font-size:16px; font-weight:700; color:#6c63ff; font-variant-numeric:tabular-nums; }
+.cd-days.past { color:var(--text3); }
+.cd-unit { font-size:9px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
+.cd-name { flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+.cd-date-label { font-size:11px; color:var(--text3); flex-shrink:0; }
+
+/* notes */
+.note-area { width:100%; min-height:105px; resize:vertical; font-size:13px; line-height:1.65; padding:9px 10px; border:1px solid var(--border-mid); border-radius:var(--radius-xs); background:#fffef5; color:var(--text); font-family:inherit; outline:none; }
+.note-area:focus { border-color:#f9a825; }
+.save-hint { font-size:11px; color:var(--text3); text-align:right; margin-top:5px; min-height:15px; }
+
+/* calculator */
+.calc-display { background:#1a1814; border-radius:var(--radius-sm); padding:12px 14px; margin-bottom:10px; text-align:right; }
+.calc-expr { font-size:12px; color:#666; min-height:16px; }
+.calc-result { font-size:32px; font-weight:200; color:#f5f5f5; letter-spacing:-0.02em; font-variant-numeric:tabular-nums; }
+.calc-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:7px; }
+.calc-btn { padding:11px 6px; font-size:15px; font-weight:500; border:none; border-radius:var(--radius-xs); background:#f0ede8; color:var(--text); cursor:pointer; text-align:center; transition:background .1s,transform .08s; user-select:none; }
+.calc-btn:hover { background:#e0ddd8; }
+.calc-btn:active { transform:scale(0.94); }
+.calc-btn.op { background:#ede7f6; color:#6a1b9a; font-weight:600; }
+.calc-btn.op:hover { background:#e1d5f5; }
+.calc-btn.eq { background:linear-gradient(135deg,#6c63ff,#e040fb); color:#fff; }
+.calc-btn.eq:hover { opacity:.92; }
+.calc-btn.wide { grid-column:span 2; }
+
+input[type=checkbox] { accent-color:var(--accent); width:14px; height:14px; flex-shrink:0; cursor:pointer; }
+.done-text { text-decoration:line-through; color:var(--text3); }
+.flex1 { flex:1; min-width:0; } .flex2 { flex:2; min-width:0; }
+.w70{width:70px} .w80{width:80px} .w100{width:100px} .w120{width:120px}
+.empty { color:var(--text3); font-size:13px; padding:8px 0; font-style:italic; }
+</style>
+</head>
+<body>
+
+<!-- SETUP MODAL -->
+<div class="modal-bg" id="setup-modal">
+  <div class="modal">
+    <h3>🔗 GitHub Gist Sync einrichten</h3>
+    <p>Deine Daten werden als privater Gist in deinem GitHub-Account gespeichert und auf allen Geräten synchronisiert.</p>
+    <div class="modal-steps">
+      <b>Token erstellen (2 Min):</b><br>
+      1. <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a><br>
+      2. Note: <i>Dashboard Sync</i><br>
+      3. Expiration: <i>No expiration</i><br>
+      4. Scope: ✅ <b>gist</b> (nur das!)<br>
+      5. "Generate token" → kopieren
+    </div>
+    <div class="modal-row">
+      <input type="text" id="token-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" />
+    </div>
+    <div class="modal-error" id="modal-error"></div>
+    <div style="display:flex;gap:8px;margin-top:4px">
+      <button class="btn-primary" onclick="saveToken()">Verbinden</button>
+      <button class="btn-ghost" onclick="skipSync()">Ohne Sync weitermachen</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-mark">⚡</div>
+    <div>
+      <div><h1>Zeke's Dashboard</h1></div>
+      <div class="sub">persönlich &amp; privat</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div id="sync-status" onclick="openSyncModal()" title="Sync-Einstellungen">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">kein Sync</span>
+    </div>
+    <div id="clock"></div>
+  </div>
+</header>
+
+<div class="grid">
+
+  <div class="card theme-weather">
+    <div class="card-head"><div class="card-icon">🌤️</div><h2>Wetter – Bremen</h2></div>
+    <div class="card-body" id="weather-body"><div class="empty">Lade...</div></div>
+  </div>
+
+  <div class="card theme-shop">
+    <div class="card-head"><div class="card-icon">🛒</div><h2>Einkaufsliste</h2><span class="badge" id="shop-badge">0</span></div>
+    <div class="card-body" id="shop-list"></div>
+    <div class="add-area">
+      <input type="text" id="shop-name" placeholder="Artikel..." class="flex2" />
+      <input type="url" id="shop-url" placeholder="Link..." class="w100" />
+      <button class="add-btn" onclick="addShop()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-watch">
+    <div class="card-head"><div class="card-icon">🎬</div><h2>Watchlist</h2></div>
+    <div class="card-body" id="watch-list"></div>
+    <div class="add-area">
+      <input type="text" id="watch-name" placeholder="Titel..." class="flex1" />
+      <select id="watch-type" class="w80"><option>Film</option><option>Serie</option><option>Doku</option><option>Anime</option></select>
+      <button class="add-btn" onclick="addWatch()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-links">
+    <div class="card-head"><div class="card-icon">🔗</div><h2>Links</h2></div>
+    <div class="card-body" id="link-list"></div>
+    <div class="add-area">
+      <input type="text" id="link-name" placeholder="Name..." class="w80" />
+      <input type="url" id="link-url" placeholder="https://..." class="flex1" />
+      <select id="link-cat" class="w80"><option>Tools</option><option>Shopping</option><option>Musik</option><option>Gaming</option><option>News</option><option>Arbeit</option><option>Sonstiges</option></select>
+      <button class="add-btn" onclick="addLink()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-countdown">
+    <div class="card-head"><div class="card-icon">⏳</div><h2>Countdown</h2></div>
+    <div class="card-body" id="cd-list"></div>
+    <div class="add-area">
+      <input type="text" id="cd-name" placeholder="Event / Release..." class="flex1" />
+      <input type="date" id="cd-date" class="w120" />
+      <button class="add-btn" onclick="addCountdown()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-gaming">
+    <div class="card-head"><div class="card-icon">🎮</div><h2>Gaming</h2></div>
+    <div class="card-body" id="game-list"></div>
+    <div class="add-area">
+      <input type="text" id="game-name" placeholder="Spiel..." class="flex1" />
+      <select id="game-status" class="w80"><option>Backlog</option><option>Aktiv</option><option>Pause</option><option>Durch</option></select>
+      <button class="add-btn" onclick="addGame()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-music">
+    <div class="card-head"><div class="card-icon">🎹</div><h2>Musik-Ideen</h2></div>
+    <div class="card-body" id="music-list"></div>
+    <div class="add-area">
+      <input type="text" id="music-name" placeholder="Idee / Projekt..." class="flex1" />
+      <select id="music-status" class="w70"><option>Idee</option><option>WIP</option><option>Fertig</option></select>
+      <button class="add-btn" onclick="addMusic()">+</button>
+    </div>
+  </div>
+
+  <div class="card theme-notes">
+    <div class="card-head"><div class="card-icon">📝</div><h2>Notizen</h2></div>
+    <div class="card-body">
+      <textarea class="note-area" id="notes" placeholder="Ideen, Texte, Gedanken..."></textarea>
+      <div class="save-hint" id="note-saved"></div>
+    </div>
+  </div>
+
+  <div class="card theme-calc">
+    <div class="card-head"><div class="card-icon">🔢</div><h2>Rechner</h2></div>
+    <div class="card-body">
+      <div class="calc-display">
+        <div class="calc-expr" id="calc-expr"></div>
+        <div class="calc-result" id="calc-result">0</div>
+      </div>
+      <div class="calc-grid">
+        <button class="calc-btn op" onclick="calcClear()">C</button>
+        <button class="calc-btn op" onclick="calcSign()">+/−</button>
+        <button class="calc-btn op" onclick="calcPct()">%</button>
+        <button class="calc-btn op" onclick="calcOp('/')">÷</button>
+        <button class="calc-btn" onclick="calcNum('7')">7</button>
+        <button class="calc-btn" onclick="calcNum('8')">8</button>
+        <button class="calc-btn" onclick="calcNum('9')">9</button>
+        <button class="calc-btn op" onclick="calcOp('*')">×</button>
+        <button class="calc-btn" onclick="calcNum('4')">4</button>
+        <button class="calc-btn" onclick="calcNum('5')">5</button>
+        <button class="calc-btn" onclick="calcNum('6')">6</button>
+        <button class="calc-btn op" onclick="calcOp('-')">−</button>
+        <button class="calc-btn" onclick="calcNum('1')">1</button>
+        <button class="calc-btn" onclick="calcNum('2')">2</button>
+        <button class="calc-btn" onclick="calcNum('3')">3</button>
+        <button class="calc-btn op" onclick="calcOp('+')">+</button>
+        <button class="calc-btn wide" onclick="calcNum('0')">0</button>
+        <button class="calc-btn" onclick="calcDot()">.</button>
+        <button class="calc-btn eq" onclick="calcEq()">=</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── CONSTANTS ─────────────────────────────────────
+const LS_DATA    = 'zeke_dash_v3';
+const LS_TOKEN   = 'zeke_gh_token';
+const LS_GIST_ID = 'zeke_gist_id';
+const GIST_FNAME = 'zeke-dashboard.json';
+
+// ── STATE ─────────────────────────────────────────
+let D = { shopping:[], watchlist:[], links:[], games:[], music:[], countdowns:[], notes:'' };
+let syncTimer = null;
+
+// ── SYNC STATUS UI ────────────────────────────────
+function setSyncUI(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot' + (state ? ' ' + state : '');
+  lbl.textContent = label;
+}
+
+// ── GITHUB GIST API ───────────────────────────────
+const ghToken  = () => localStorage.getItem(LS_TOKEN);
+const ghGistId = () => localStorage.getItem(LS_GIST_ID);
+
+async function ghFetch(path, opts = {}) {
+  const res = await fetch('https://api.github.com' + path, {
+    ...opts,
+    headers: {
+      'Authorization': 'token ' + ghToken(),
+      'Accept': 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json',
+      ...(opts.headers || {})
+    }
+  });
+  if (!res.ok) throw new Error('GitHub ' + res.status);
+  return res.json();
+}
+
+async function gistLoad() {
+  const id = ghGistId();
+  if (!id) return null;
+  const gist = await ghFetch('/gists/' + id);
+  const content = gist.files[GIST_FNAME]?.content;
+  return content ? JSON.parse(content) : null;
+}
+
+async function gistSave(data) {
+  const payload = JSON.stringify({ files: { [GIST_FNAME]: { content: JSON.stringify(data, null, 2) } } });
+  const id = ghGistId();
+  if (id) {
+    await ghFetch('/gists/' + id, { method: 'PATCH', body: payload });
+  } else {
+    const gist = await ghFetch('/gists', {
+      method: 'POST',
+      body: JSON.stringify({
+        description: 'Zeke Dashboard Data',
+        public: false,
+        files: { [GIST_FNAME]: { content: JSON.stringify(data, null, 2) } }
+      })
+    });
+    localStorage.setItem(LS_GIST_ID, gist.id);
+  }
+}
+
+// ── SETUP MODAL ───────────────────────────────────
+function openSyncModal() {
+  document.getElementById('setup-modal').classList.remove('hidden');
+  const t = ghToken();
+  if (t) document.getElementById('token-input').value = t;
+}
+
+async function saveToken() {
+  const tok = document.getElementById('token-input').value.trim();
+  const errEl = document.getElementById('modal-error');
+  errEl.textContent = '';
+  if (!tok) { errEl.textContent = 'Bitte Token eingeben.'; return; }
+  setSyncUI('busy', 'Verbinde...');
+  try {
+    // verify token works
+    const res = await fetch('https://api.github.com/user', {
+      headers: { 'Authorization': 'token ' + tok }
+    });
+    if (!res.ok) throw new Error('Ungültiger Token');
+    const user = await res.json();
+    localStorage.setItem(LS_TOKEN, tok);
+    localStorage.removeItem(LS_GIST_ID);
+    document.getElementById('setup-modal').classList.add('hidden');
+    setSyncUI('busy', 'Lade Daten...');
+    // try to find existing dashboard gist
+    const gists = await fetch('https://api.github.com/gists', { headers: { 'Authorization': 'token ' + tok } }).then(r=>r.json());
+    const existing = gists.find(g => g.files[GIST_FNAME]);
+    if (existing) {
+      localStorage.setItem(LS_GIST_ID, existing.id);
+      const remote = await gistLoad();
+      if (remote) { D = {...D, ...remote}; renderAll(); }
+    }
+    saveLocal();
+    setSyncUI('ok', '@' + user.login + ' ✓');
+  } catch(e) {
+    errEl.textContent = e.message || 'Verbindung fehlgeschlagen.';
+    setSyncUI('err', 'Fehler');
+  }
+}
+
+function skipSync() {
+  document.getElementById('setup-modal').classList.add('hidden');
+  setSyncUI('', 'nur lokal');
+}
+
+// ── SAVE & LOAD ───────────────────────────────────
+function saveLocal() {
+  try { localStorage.setItem(LS_DATA, JSON.stringify(D)); } catch(e) {}
+}
+
+function scheduleSave() {
+  saveLocal();
+  if (!ghToken()) return;
+  clearTimeout(syncTimer);
+  setSyncUI('busy', 'speichert...');
+  syncTimer = setTimeout(async () => {
+    try {
+      await gistSave(D);
+      setSyncUI('ok', 'gespeichert ✓');
+      setTimeout(() => {
+        const tok = ghToken();
+        if (tok) setSyncUI('ok', 'Gist sync aktiv');
+      }, 2500);
+    } catch(e) {
+      setSyncUI('err', 'Sync-Fehler');
+    }
+  }, 1200);
+}
+
+async function init() {
+  // load local first (instant)
+  try { const s = localStorage.getItem(LS_DATA); if(s) D = {...D, ...JSON.parse(s)}; } catch(e) {}
+  renderAll();
+
+  if (ghToken()) {
+    // show modal only if no token; else sync silently
+    setSyncUI('busy', 'Synchronisiere...');
+    try {
+      const remote = await gistLoad();
+      if (remote) { D = {...D, ...remote}; renderAll(); saveLocal(); }
+      setSyncUI('ok', 'Gist sync aktiv');
+    } catch(e) {
+      setSyncUI('err', 'Sync-Fehler');
+    }
+  } else {
+    document.getElementById('setup-modal').classList.remove('hidden');
+  }
+}
+
+function renderAll() {
+  renderShop(); renderWatch(); renderLinks(); renderGames(); renderMusic(); renderCountdowns();
+  document.getElementById('notes').value = D.notes || '';
+}
+
+// ── CLOCK ─────────────────────────────────────────
+function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    n.toLocaleDateString('de-DE',{weekday:'short',day:'2-digit',month:'2-digit'}) + '  ' +
+    n.toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+tick(); setInterval(tick, 1000);
+
+// ── WEATHER ───────────────────────────────────────
+const WMO = {
+  0:['Klar','☀️'],1:['Meist klar','🌤️'],2:['Teils bewölkt','⛅'],3:['Bedeckt','☁️'],
+  45:['Nebel','🌫️'],48:['Raureif','🌫️'],
+  51:['Leichter Niesel','🌦️'],53:['Niesel','🌦️'],55:['Starker Niesel','🌧️'],
+  61:['Leichter Regen','🌧️'],63:['Regen','🌧️'],65:['Starker Regen','🌧️'],
+  71:['Leichter Schnee','🌨️'],73:['Schnee','🌨️'],75:['Starker Schnee','❄️'],
+  80:['Regenschauer','🌦️'],81:['Schauer','🌧️'],82:['Starke Schauer','⛈️'],
+  95:['Gewitter','⛈️'],96:['Gewitter+Hagel','⛈️']
+};
+async function loadWeather() {
+  try {
+    const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=53.07&longitude=8.8&current=temperature_2m,apparent_temperature,weathercode,windspeed_10m,relative_humidity_2m&timezone=Europe/Berlin');
+    const j = await r.json(); const c = j.current;
+    const [desc, emoji] = WMO[c.weathercode] || ['–','🌡️'];
+    document.getElementById('weather-body').innerHTML = `
+      <div class="weather-row">
+        <div class="weather-temp">${Math.round(c.temperature_2m)}°</div>
+        <div style="font-size:34px">${emoji}</div>
+        <div>
+          <div class="weather-desc">${desc}</div>
+          <div class="weather-meta">Gefühlt ${Math.round(c.apparent_temperature)}°<br>💨 ${Math.round(c.windspeed_10m)} km/h &nbsp;💧 ${c.relative_humidity_2m}%</div>
+        </div>
+      </div>`;
+  } catch(e) {
+    document.getElementById('weather-body').innerHTML = '<div class="empty">Nicht verfügbar</div>';
+  }
+}
+loadWeather(); setInterval(loadWeather, 600000);
+
+// ── SHOPPING ──────────────────────────────────────
+function renderShop() {
+  const el = document.getElementById('shop-list');
+  document.getElementById('shop-badge').textContent = D.shopping.filter(i=>!i.done).length;
+  if(!D.shopping.length){el.innerHTML='<div class="empty">Noch nichts drauf</div>';return;}
+  el.innerHTML = D.shopping.map((it,i)=>`
+    <div class="row">
+      <input type="checkbox" ${it.done?'checked':''} onchange="toggleShop(${i})">
+      <span class="row-label ${it.done?'done-text':''}">
+        ${it.url?`<a href="${esc(it.url)}" target="_blank">${esc(it.name)}</a>`:esc(it.name)}
+      </span>
+      ${it.url?'<span style="opacity:.35;flex-shrink:0">↗</span>':''}
+      <span class="del" onclick="del('shopping',${i})">×</span>
+    </div>`).join('');
+}
+function addShop(){const n=v('shop-name'),u=v('shop-url');if(!n)return;D.shopping.push({name:n,url:u,done:false});cl('shop-name');cl('shop-url');scheduleSave();renderShop();}
+function toggleShop(i){D.shopping[i].done=!D.shopping[i].done;scheduleSave();renderShop();}
+
+// ── WATCHLIST ─────────────────────────────────────
+const watchPill=t=>({'Film':'pill-blue','Serie':'pill-purple','Doku':'pill-green','Anime':'pill-amber'}[t]||'pill-gray');
+function renderWatch(){
+  const el=document.getElementById('watch-list');
+  if(!D.watchlist.length){el.innerHTML='<div class="empty">Leere Watchlist</div>';return;}
+  el.innerHTML=D.watchlist.map((it,i)=>`
+    <div class="row">
+      <span class="star" onclick="toggleStar(${i})">${it.star?'★':'☆'}</span>
+      <span class="row-label">${esc(it.name)}</span>
+      <span class="pill ${watchPill(it.type)}">${esc(it.type)}</span>
+      <span class="del" onclick="del('watchlist',${i})">×</span>
+    </div>`).join('');
+}
+function addWatch(){const n=v('watch-name');if(!n)return;D.watchlist.push({name:n,type:v('watch-type'),star:false});cl('watch-name');scheduleSave();renderWatch();}
+function toggleStar(i){D.watchlist[i].star=!D.watchlist[i].star;scheduleSave();renderWatch();}
+
+// ── LINKS ─────────────────────────────────────────
+function renderLinks(){
+  const el=document.getElementById('link-list');
+  if(!D.links.length){el.innerHTML='<div class="empty">Noch keine Links</div>';return;}
+  const cats=[...new Set(D.links.map(l=>l.cat))];
+  el.innerHTML=cats.map(cat=>`
+    <div class="section-label">${esc(cat)}</div>
+    ${D.links.filter(l=>l.cat===cat).map(l=>{const i=D.links.indexOf(l);return`<div class="row"><span class="row-label"><a href="${esc(l.url)}" target="_blank">${esc(l.name)}</a></span><span class="del" onclick="del('links',${i})">×</span></div>`;}).join('')}`).join('');
+}
+function addLink(){const n=v('link-name'),u=v('link-url');if(!n||!u)return;D.links.push({name:n,url:u,cat:v('link-cat')});cl('link-name');cl('link-url');scheduleSave();renderLinks();}
+
+// ── COUNTDOWN ─────────────────────────────────────
+function renderCountdowns(){
+  const el=document.getElementById('cd-list');
+  if(!D.countdowns.length){el.innerHTML='<div class="empty">Kein Countdown aktiv</div>';return;}
+  const today=new Date();today.setHours(0,0,0,0);
+  const sorted=[...D.countdowns].map((c,i)=>({...c,idx:i})).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  el.innerHTML=sorted.map(it=>{
+    const diff=Math.round((new Date(it.date)-today)/86400000);
+    const past=diff<0,zero=diff===0;
+    const num=zero?'0':String(Math.abs(diff));
+    const unit=zero?'HEUTE':past?(Math.abs(diff)===1?'TAG':'TAGE'):(diff===1?'TAG':'TAGE');
+    const dateStr=new Date(it.date).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit',year:'numeric'});
+    return`<div class="cd-item">
+      <div class="cd-bubble ${past?'past':''}">
+        <div class="cd-days ${past?'past':''}">${past?'-':''}${num}</div>
+        <div class="cd-unit">${unit}</div>
+      </div>
+      <span class="cd-name">${esc(it.name)}</span>
+      <span class="cd-date-label">${dateStr}</span>
+      <span class="del" onclick="del('countdowns',${it.idx})">×</span>
+    </div>`;
+  }).join('');
+}
+function addCountdown(){const n=v('cd-name'),d=document.getElementById('cd-date').value;if(!n||!d)return;D.countdowns.push({name:n,date:d});cl('cd-name');document.getElementById('cd-date').value='';scheduleSave();renderCountdowns();}
+
+// ── GAMING ────────────────────────────────────────
+const gamePill=s=>({'Backlog':'pill-gray','Aktiv':'pill-green','Pause':'pill-amber','Durch':'pill-blue'}[s]||'pill-gray');
+function renderGames(){
+  const el=document.getElementById('game-list');
+  if(!D.games.length){el.innerHTML='<div class="empty">Backlog leer 🎉</div>';return;}
+  el.innerHTML=D.games.map((g,i)=>`<div class="row"><span class="row-label">${esc(g.name)}</span><span class="pill ${gamePill(g.status)}">${esc(g.status)}</span><span class="del" onclick="del('games',${i})">×</span></div>`).join('');
+}
+function addGame(){const n=v('game-name');if(!n)return;D.games.push({name:n,status:v('game-status')});cl('game-name');scheduleSave();renderGames();}
+
+// ── MUSIK ─────────────────────────────────────────
+const musicPill=s=>({'Idee':'pill-gray','WIP':'pill-amber','Fertig':'pill-green'}[s]||'pill-gray');
+function renderMusic(){
+  const el=document.getElementById('music-list');
+  if(!D.music.length){el.innerHTML='<div class="empty">Keine Ideen? Unmöglich.</div>';return;}
+  el.innerHTML=D.music.map((m,i)=>`<div class="row"><span class="row-label">${esc(m.name)}</span><span class="pill ${musicPill(m.status)}">${esc(m.status)}</span><span class="del" onclick="del('music',${i})">×</span></div>`).join('');
+}
+function addMusic(){const n=v('music-name');if(!n)return;D.music.push({name:n,status:v('music-status')});cl('music-name');scheduleSave();renderMusic();}
+
+// ── NOTIZEN ───────────────────────────────────────
+let noteTimer2;
+document.getElementById('notes').addEventListener('input',function(){
+  D.notes=this.value;
+  clearTimeout(noteTimer2);
+  noteTimer2=setTimeout(()=>{
+    scheduleSave();
+    const el=document.getElementById('note-saved');
+    el.textContent='✓ gespeichert';
+    setTimeout(()=>el.textContent='',2000);
+  },800);
+});
+
+// ── RECHNER ───────────────────────────────────────
+let cVal='0',cOp=null,cPrev=null,cNew=true;
+function calcDisplay(){
+  document.getElementById('calc-result').textContent=cVal.length>11?parseFloat(cVal).toPrecision(8):cVal;
+  document.getElementById('calc-expr').textContent=cPrev&&cOp?cPrev+' '+({'+':'+','-':'−','*':'×','/':'÷'}[cOp]||cOp):'';
+}
+function calcNum(n){if(cNew){cVal=n;cNew=false;}else if(cVal==='0'&&n!=='.'){cVal=n;}else if(cVal.length<13)cVal+=n;calcDisplay();}
+function calcDot(){if(cNew){cVal='0.';cNew=false;}else if(!cVal.includes('.'))cVal+='.';calcDisplay();}
+function calcOp(op){if(cOp&&!cNew)calcEq(true);cPrev=cVal;cOp=op;cNew=true;calcDisplay();}
+function calcEq(chain){
+  if(!cOp||!cPrev)return;
+  const a=parseFloat(cPrev),b=parseFloat(cVal);
+  let res;
+  if(cOp==='+')res=a+b;else if(cOp==='-')res=a-b;else if(cOp==='*')res=a*b;else res=b===0?'Fehler':a/b;
+  cVal=res==='Fehler'?'Fehler':String(parseFloat(res.toFixed(10)));
+  if(!chain){cOp=null;cPrev=null;}cNew=true;calcDisplay();
+}
+function calcClear(){cVal='0';cOp=null;cPrev=null;cNew=true;calcDisplay();}
+function calcSign(){cVal=String(-parseFloat(cVal)||0);calcDisplay();}
+function calcPct(){cVal=String(parseFloat(cVal)/100);calcDisplay();}
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  if('0123456789'.includes(e.key))calcNum(e.key);
+  else if(e.key==='.')calcDot();
+  else if(e.key==='+')calcOp('+');
+  else if(e.key==='-')calcOp('-');
+  else if(e.key==='*')calcOp('*');
+  else if(e.key==='/'){{e.preventDefault();calcOp('/');}}
+  else if(e.key==='Enter'||e.key==='=')calcEq(false);
+  else if(e.key==='Backspace'){cVal=cVal.length>1?cVal.slice(0,-1):'0';calcDisplay();}
+  else if(e.key==='Escape')calcClear();
+});
+
+// ── HELPERS ───────────────────────────────────────
+function v(id){return document.getElementById(id).value.trim();}
+function cl(id){document.getElementById(id).value='';}
+function del(arr,i){D[arr].splice(i,1);scheduleSave();renderAll();}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+document.querySelectorAll('.add-area input').forEach(inp=>{
+  inp.addEventListener('keydown',e=>{
+    if(e.key!=='Enter')return;
+    inp.closest('.card').querySelector('.add-btn')?.click();
+  });
+});
+
+init();
+</script>
+</body>
+</html>
