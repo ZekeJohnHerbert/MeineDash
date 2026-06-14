@@ -1504,6 +1504,8 @@ async function spInit(){
     window.history.replaceState(null, '', window.location.pathname);
     window.history.replaceState(null, '', window.location.pathname);
     await spExchangeCode(code);
+    if(spToken) window.location.reload();
+    return;
   } else {
     spToken = localStorage.getItem('bc_sp_tok');
   }
