@@ -256,9 +256,7 @@ header{
 }
 .wordmark-icon svg{ width:16px; height:16px; }
 .wordmark-text{
-  font-size:15px; font-weight:700; letter-spacing:-.03em;
-  background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent;
-  background-clip:text;
+  font-size:15px; font-weight:800; letter-spacing:.1em; color:#fff;
 }
 
 /* desk switcher */
@@ -646,31 +644,27 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
 
 <header>
   <div class="wordmark">
-    <div class="wordmark-icon" style="width:36px;height:36px;border-radius:10px;overflow:hidden;padding:0">
-      <svg viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:36px;height:36px;display:block">
-        <defs>
-          <linearGradient id="bcg1" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#7c3aed"/>
-            <stop offset="50%" stop-color="#2563eb"/>
-            <stop offset="100%" stop-color="#06b6d4"/>
-          </linearGradient>
-        </defs>
-        <rect width="36" height="36" fill="url(#bcg1)"/>
-        <!-- Mountain silhouette -->
-        <polygon points="18,7 28,26 8,26" fill="rgba(255,255,255,0.15)" stroke="none"/>
-        <polygon points="18,7 28,26 8,26" fill="none" stroke="rgba(255,255,255,0.9)" stroke-width="1.5" stroke-linejoin="round"/>
-        <!-- Inner peak highlight -->
-        <polygon points="18,7 23,18 13,18" fill="rgba(255,255,255,0.2)" stroke="none"/>
-        <!-- Base line -->
-        <line x1="6" y1="26" x2="30" y2="26" stroke="rgba(255,255,255,0.6)" stroke-width="1.5" stroke-linecap="round"/>
-        <!-- Flag on top -->
-        <line x1="18" y1="7" x2="18" y2="3" stroke="rgba(255,255,255,0.9)" stroke-width="1.2" stroke-linecap="round"/>
-        <polygon points="18,3 22,5 18,7" fill="rgba(255,255,255,0.9)" stroke="none"/>
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:44px;height:32px;display:block;flex-shrink:0">
+        <!-- Ground -->
+        <line x1="2" y1="27" x2="42" y2="27" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
+        <!-- Left tent panel -->
+        <path d="M22 4 L4 27" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Right tent panel -->
+        <path d="M22 4 L40 27" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Fill -->
+        <path d="M22 4 L4 27 L40 27 Z" fill="rgba(255,255,255,0.07)"/>
+        <!-- Inner left ridge -->
+        <path d="M22 4 L12 27" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+        <!-- Door arch -->
+        <path d="M15 27 Q22 18 29 27" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <!-- Peak dot -->
+        <circle cx="22" cy="4" r="1.5" fill="rgba(255,255,255,0.6)"/>
       </svg>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:0px">
-      <span class="wordmark-text" style="font-size:16px;font-weight:800;letter-spacing:.12em">BASECAMP</span>
-      <span id="desk-name" style="font-size:10px;color:rgba(200,160,100,0.6);letter-spacing:.08em;font-weight:500;text-transform:uppercase;margin-top:-1px">Private Base</span>
+      <div style="display:flex;flex-direction:column;gap:1px">
+        <span class="wordmark-text">BASECAMP</span>
+        <span id="desk-name" style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.06em;font-weight:500;text-transform:uppercase">Private Base</span>
+      </div>
     </div>
   </div>
 
@@ -1324,11 +1318,14 @@ function mp3Play(i){
   const d=dd(); if(!d.mp3tracks[i]) return;
   mp3Idx=i; mp3Playing=false;
   if(mp3Audio){mp3Audio.pause();mp3Audio=null;}
-  mp3Audio=new Audio(d.mp3tracks[i].url);
+  mp3Audio=new Audio();
+  mp3Audio.crossOrigin='anonymous';
+  mp3Audio.src=d.mp3tracks[i].url;
   mp3Audio.volume=(d.mp3vol??80)/100;
   mp3Audio.addEventListener('timeupdate',mp3UpdateProgress);
   mp3Audio.addEventListener('ended',()=>mp3Skip(1));
-  mp3Audio.play().then(()=>{mp3Playing=true;rfr('mp3');}).catch(()=>{});
+  mp3Audio.addEventListener('error',()=>{mp3Playing=false;rfr('mp3');});
+  mp3Audio.play().then(()=>{mp3Playing=true;rfr('mp3');}).catch(()=>{mp3Playing=false;rfr('mp3');});
   rfr('mp3');
 }
 
@@ -1336,7 +1333,7 @@ function mp3Toggle(){
   if(mp3Idx===null){ const d=dd(); if(d.mp3tracks.length) mp3Play(0); return; }
   if(!mp3Audio) { mp3Play(mp3Idx); return; }
   if(mp3Playing){ mp3Audio.pause(); mp3Playing=false; }
-  else { mp3Audio.play(); mp3Playing=true; }
+  else { mp3Audio.play().then(()=>{mp3Playing=true;rfr('mp3');}).catch(()=>{mp3Playing=false;rfr('mp3');}); }
   rfr('mp3');
 }
 
@@ -1372,9 +1369,23 @@ function mkDrag(card){
     if(e.target.tagName==='BUTTON'||e.target.tagName==='INPUT'||e.target.tagName==='SELECT')return;
     e.preventDefault(); dragging=true;
     card.classList.add('dragging'); card.style.zIndex=++zC;
-    const r=card.getBoundingClientRect(); ox=e.clientX-r.left; oy=e.clientY-r.top;
-    const mm=e2=>{if(!dragging)return;card.style.left=Math.max(0,e2.clientX-ox)+'px';card.style.top=Math.max(0,e2.clientY-oy)+'px';};
-    const mu=()=>{if(!dragging)return;dragging=false;card.classList.remove('dragging');const id=card.dataset.id;D[cur].pos[id]={x:parseInt(card.style.left),y:parseInt(card.style.top),w:card.offsetWidth};sched();document.removeEventListener('mousemove',mm);document.removeEventListener('mouseup',mu);};
+    // Use current card position + mouse offset within card head
+    const r=card.getBoundingClientRect();
+    const desk=document.getElementById('desk');
+    const dr=desk.getBoundingClientRect();
+    ox=e.clientX-r.left; oy=e.clientY-r.top;
+    const mm=e2=>{
+      if(!dragging)return;
+      const x=Math.max(0,e2.clientX-dr.left-ox);
+      const y=Math.max(0,e2.clientY-dr.top-oy+desk.scrollTop);
+      card.style.left=x+'px'; card.style.top=y+'px';
+    };
+    const mu=()=>{
+      if(!dragging)return; dragging=false; card.classList.remove('dragging');
+      const id=card.dataset.id;
+      D[cur].pos[id]={x:parseInt(card.style.left),y:parseInt(card.style.top),w:card.offsetWidth,h:card.offsetHeight||undefined};
+      sched(); document.removeEventListener('mousemove',mm); document.removeEventListener('mouseup',mu);
+    };
     document.addEventListener('mousemove',mm); document.addEventListener('mouseup',mu);
   });
   // touch
@@ -1385,7 +1396,11 @@ function mkDrag(card){
   },{passive:true});
   head.addEventListener('touchmove',e=>{
     if(!dragging)return; e.preventDefault();
-    const t=e.touches[0]; card.style.left=Math.max(0,t.clientX-ox)+'px'; card.style.top=Math.max(0,t.clientY-oy)+'px';
+    const t=e.touches[0];
+    const desk=document.getElementById('desk');
+    const dr=desk.getBoundingClientRect();
+    card.style.left=Math.max(0,t.clientX-dr.left-ox)+'px';
+    card.style.top=Math.max(0,t.clientY-dr.top-oy+desk.scrollTop)+'px';
   },{passive:false});
   head.addEventListener('touchend',()=>{
     if(!dragging)return; dragging=false; card.classList.remove('dragging');
