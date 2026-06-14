@@ -1500,8 +1500,6 @@ async function spInit(){
     return;
   }
   if(code){
-    // Direct redirect fallback
-    window.history.replaceState(null, '', window.location.pathname);
     window.history.replaceState(null, '', window.location.pathname);
     await spExchangeCode(code);
     if(spToken) window.location.reload();
@@ -1509,7 +1507,7 @@ async function spInit(){
   } else {
     spToken = localStorage.getItem('bc_sp_tok');
   }
-  if(spToken){ rfr('spotify'); spStartPolling(); if(window.Spotify) spInitPlayer(); }
+  if(spToken){ spStartPolling(); if(window.Spotify) spInitPlayer(); rfr('spotify'); }
 }
 
 function spLogout(){
@@ -1909,8 +1907,7 @@ tick();setInterval(tick,1000);
 // desk height
 setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.querySelectorAll('.card').forEach(c=>{m=Math.max(m,c.offsetTop+c.offsetHeight+40);});desk.style.minHeight=m+'px';},500);
 
-init();
-spInit();
+(async()=>{ await init(); await spInit(); })();
 </script>
 </body>
 </html>
