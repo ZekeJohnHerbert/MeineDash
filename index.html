@@ -1440,7 +1440,28 @@ async function spLogin(){
     '&scope=' + encodeURIComponent(SP_SCOPES) +
     '&code_challenge_method=S256' +
     '&code_challenge=' + challenge;
-  window.location.href = url;
+  // Open popup – Spotify redirects back with ?code= in the popup window
+  const popup = window.open(url, 'spotify-login', 'width=500,height=700,left=200,top=100');
+  // Poll until popup closes or code appears in localStorage
+  const poll = setInterval(async () => {
+    if(!popup || popup.closed){
+      clearInterval(poll);
+      // Check if token was stored by the popup
+      spToken = localStorage.getItem('bc_sp_tok');
+      if(spToken){ spStartPolling(); if(window.Spotify) spInitPlayer(); rfr('spotify'); }
+      return;
+    }
+    try {
+      // When popup lands back on our domain, grab the code
+      const popUrl = popup.location.href;
+      if(popUrl && popUrl.includes('code=')){
+        clearInterval(poll);
+        const code = new URLSearchParams(popup.location.search).get('code');
+        popup.close();
+        if(code){ await spExchangeCode(code); spStartPolling(); if(window.Spotify) spInitPlayer(); rfr('spotify'); }
+      }
+    } catch(e){ /* cross-origin – still on spotify.com, ignore */ }
+  }, 500);
 }
 
 async function spExchangeCode(code){
@@ -1490,10 +1511,16 @@ async function spEnsureToken(){
 }
 
 async function spInit(){
-  // PKCE callback: code in URL params
+  // If this window was opened as a popup and has ?code=, exchange and close
   const params = new URLSearchParams(window.location.search);
   const code = params.get('code');
+  if(code && window.opener){
+    // We're the popup – parent will poll and grab the code from our URL
+    // Just wait, parent reads popup.location.search directly
+    return;
+  }
   if(code){
+    // Direct redirect (no popup) – handle normally
     window.history.replaceState(null, '', window.location.pathname);
     await spExchangeCode(code);
   } else {
