@@ -119,6 +119,121 @@ body.desk-work::before{
 .card.dragging iframe,
 .card.dragging video,
 .card.dragging img { pointer-events: none; }
+
+/* ── RADIO ── */
+.radio-player{
+  display:flex; flex-direction:column; gap:10px;
+}
+.radio-now{
+  background:var(--bg4); border-radius:var(--radius-sm);
+  padding:12px 14px; border:1px solid var(--border2);
+  display:flex; align-items:center; gap:12px; min-height:64px;
+}
+.radio-vis{
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:var(--grad); display:flex; align-items:center; justify-content:center;
+  position:relative; box-shadow:0 0 14px var(--glow);
+}
+.radio-vis svg{ width:16px; height:16px; color:#fff; }
+.radio-vis.playing::after{
+  content:''; position:absolute; inset:-4px; border-radius:50%;
+  border:2px solid var(--a1); opacity:.5;
+  animation:radioRing 1.5s ease-in-out infinite;
+}
+@keyframes radioRing{0%{transform:scale(1);opacity:.5}100%{transform:scale(1.5);opacity:0}}
+.radio-info{ flex:1; min-width:0; }
+.radio-station{ font-size:13px; font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.radio-status{ font-size:11px; color:var(--text3); margin-top:2px; }
+.radio-status.live{ color:#10b981; }
+
+.radio-controls{ display:flex; align-items:center; gap:8px; }
+.radio-play{
+  width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
+  background:var(--grad); color:#fff; display:flex; align-items:center; justify-content:center;
+  box-shadow:0 0 12px var(--glow); transition:opacity .15s, transform .1s; flex-shrink:0;
+}
+.radio-play:hover{ opacity:.85; }
+.radio-play:active{ transform:scale(.93); }
+.radio-play svg{ width:14px; height:14px; }
+.radio-vol{ flex:1; accent-color:var(--accent); cursor:pointer; }
+
+.radio-list{ display:flex; flex-direction:column; gap:4px; max-height:180px; overflow-y:auto; }
+.radio-list::-webkit-scrollbar{ width:3px; }
+.radio-list::-webkit-scrollbar-thumb{ background:var(--border2); border-radius:2px; }
+.radio-item{
+  display:flex; align-items:center; gap:8px; padding:7px 10px;
+  border-radius:8px; border:1px solid var(--border); background:var(--surface);
+  cursor:pointer; transition:all .15s; font-size:12px;
+}
+.radio-item:hover{ background:var(--surface2); border-color:var(--border2); }
+.radio-item.active{ border-color:var(--accent); background:rgba(124,58,237,0.1); }
+body.desk-work .radio-item.active{ background:rgba(5,150,105,0.1); }
+.radio-item-dot{
+  width:7px; height:7px; border-radius:50%; background:var(--text3); flex-shrink:0;
+}
+.radio-item.active .radio-item-dot{
+  background:#10b981; box-shadow:0 0 6px rgba(16,185,129,0.6);
+  animation:pulse .8s ease-in-out infinite alternate;
+}
+.radio-item-name{ flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text2); }
+.radio-item.active .radio-item-name{ color:var(--text); font-weight:600; }
+.radio-item-genre{ font-size:10px; color:var(--text3); flex-shrink:0; }
+
+
+/* ── RADIO ── */
+.radio-now{
+  display:flex; align-items:center; gap:12px; padding:10px 0 12px;
+  border-bottom:1px solid var(--border);
+}
+.radio-visualizer{
+  display:flex; align-items:flex-end; gap:2px; height:28px; flex-shrink:0;
+}
+.radio-bar{
+  width:3px; border-radius:2px; background:var(--grad);
+  animation:radioBar 0.8s ease-in-out infinite alternate;
+  box-shadow:0 0 6px var(--glow);
+}
+.radio-bar:nth-child(1){height:40%;animation-delay:0s}
+.radio-bar:nth-child(2){height:80%;animation-delay:.15s}
+.radio-bar:nth-child(3){height:60%;animation-delay:.05s}
+.radio-bar:nth-child(4){height:100%;animation-delay:.2s}
+.radio-bar:nth-child(5){height:50%;animation-delay:.1s}
+@keyframes radioBar{from{transform:scaleY(.3)}to{transform:scaleY(1)}}
+.radio-visualizer.paused .radio-bar{animation:none;transform:scaleY(.2);opacity:.4;}
+.radio-name{font-size:13px;font-weight:600;color:var(--text);}
+.radio-genre{font-size:10px;color:var(--text3);margin-top:2px;font-family:'JetBrains Mono',monospace;}
+.radio-controls{display:flex;align-items:center;gap:8px;margin-top:10px;}
+.radio-play{
+  width:36px;height:36px;border-radius:50%;border:none;cursor:pointer;
+  background:var(--grad);color:#fff;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 16px var(--glow);transition:transform .15s,opacity .15s;flex-shrink:0;
+}
+.radio-play:hover{transform:scale(1.08);}
+.radio-play:active{transform:scale(.94);}
+.radio-play svg{width:14px;height:14px;}
+.radio-vol{
+  flex:1; -webkit-appearance:none; appearance:none; height:3px;
+  border-radius:2px; outline:none; cursor:pointer;
+  background:linear-gradient(to right,var(--a1) 0%,var(--a1) var(--vol,70%),var(--border2) var(--vol,70%),var(--border2) 100%);
+}
+.radio-vol::-webkit-slider-thumb{-webkit-appearance:none;width:12px;height:12px;border-radius:50%;background:#fff;box-shadow:0 0 8px var(--glow);cursor:pointer;}
+.radio-stations{display:flex;flex-direction:column;gap:4px;margin-top:10px;max-height:160px;overflow-y:auto;}
+.radio-stations::-webkit-scrollbar{width:3px;}
+.radio-stations::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+.rstation{
+  display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;
+  border:1px solid var(--border);background:var(--surface);cursor:pointer;
+  transition:all .15s;font-size:12px;
+}
+.rstation:hover{background:var(--surface2);border-color:var(--border2);}
+.rstation.active{border-color:var(--accent);background:rgba(124,58,237,0.1);}
+.rstation-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;transition:all .2s;}
+.rstation.active .rstation-dot{background:var(--a1);box-shadow:0 0 8px var(--glow);}
+.rstation-info{flex:1;min-width:0;}
+.rstation-name{font-weight:600;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rstation.active .rstation-name{color:var(--text);}
+.rstation-url{font-size:10px;color:var(--text3);font-family:'JetBrains Mono',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
 /* ── HEADER ── */
 header{
   position:sticky; top:0; z-index:100;
@@ -590,6 +705,8 @@ const ICONS = {
   pinboard:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l4 4-5.5 1L5 10.5 2 14M10 2L5 7 3.5 11.5"/><circle cx="12" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
   video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
+  radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L10 2"/><circle cx="11.5" cy="11.5" r="1.5"/><line x1="4" y1="10" x2="4" y2="12"/><line x1="7" y1="10" x2="7" y2="13"/></svg>`,
+  radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L9 2l5 5"/><circle cx="11.5" cy="11" r="1.5" fill="currentColor" stroke="none"/><line x1="3" y1="11" x2="7" y2="11"/></svg>`,
 };
 
 // card icon bg colors
@@ -597,12 +714,12 @@ const ICON_BG = {
   weather:'rgba(6,182,212,.15)',calendar:'rgba(239,68,68,.15)',shopping:'rgba(245,158,11,.15)',
   watchlist:'rgba(139,92,246,.15)',links:'rgba(6,182,212,.15)',countdown:'rgba(236,72,153,.15)',
   gaming:'rgba(16,185,129,.15)',music:'rgba(251,146,60,.15)',notes:'rgba(234,179,8,.15)',
-  calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',video:'rgba(239,68,68,.15)',
+  calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',video:'rgba(239,68,68,.15)',radio:'rgba(6,182,212,.15)',radio:'rgba(6,182,212,.15)',
 };
 const ICON_COLOR = {
   weather:'#22d3ee',calendar:'#f87171',shopping:'#fbbf24',watchlist:'#a78bfa',
   links:'#22d3ee',countdown:'#f472b6',gaming:'#34d399',music:'#fb923c',
-  notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',video:'#f87171',
+  notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',video:'#f87171',radio:'#22d3ee',radio:'#22d3ee',
 };
 
 // ── CARD DEFINITIONS ──────────────────────
@@ -620,6 +737,8 @@ const DEFS=[
   {id:'pinboard', name:'Pinnwand',     desc:'Bilder per URL anpinnen', desks:['private']},
   {id:'bloomify', name:'Bloomify',     desc:'Links & Textbausteine',   desks:['work']},
   {id:'video',    name:'Video Player', desc:'YouTube & direkte URLs',  desks:['private','work']},
+  {id:'radio',    name:'Internet Radio', desc:'Sender streamen',        desks:['private','work']},
+  {id:'radio',    name:'Radio',        desc:'Internetradio Streams',   desks:['private','work']},
 ];
 
 // ── DATA ──────────────────────────────────
@@ -627,7 +746,7 @@ const LS_DATA='zeOS_v1',LS_TOK='zeOS_tok',LS_GID='zeOS_gid';
 const GFNAME='zeke-os.json';
 
 function defCards(desk){
-  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video']};
+  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video','radio']};
   const o={}; m[desk].forEach(id=>o[id]=true); return o;
 }
 function defPos(id,desk){
@@ -779,11 +898,13 @@ function cFooter(id){
     calendar:`<div class="add-area"><input type="date" id="ev-d" class="w110"/><input type="text" id="ev-n" placeholder="Termin…" class="flex1"/><button class="add-btn" onclick="addEv()">+</button></div>`,
     pinboard:`<div class="add-area"><input type="url" id="pin-u" placeholder="Bild-URL…" class="flex1"/><input type="text" id="pin-c" placeholder="Beschriftung…" class="w100"/><button class="add-btn" onclick="addPin()">+</button></div>`,
     video:`<div class="add-area"><input type="url" id="vid-u" placeholder="YouTube-Link oder direkte Video-URL…" class="flex1"/><input type="text" id="vid-t" placeholder="Titel…" class="w100"/><button class="add-btn" onclick="addVid()">+</button></div>`,
+    radio:`<div class="add-area"><input type="url" id="rad-u" placeholder="Stream-URL (https://…/stream)" class="flex1"/><input type="text" id="rad-n" placeholder="Sendername…" class="w100"/><button class="add-btn" onclick="addStation()">+</button></div>`,
+    radio:`<div class="add-area"><input type="url" id="rad-u" placeholder="Stream-URL (https://…)" class="flex1"/><input type="text" id="rad-n" placeholder="Name…" class="w80"/><input type="text" id="rad-g" placeholder="Genre…" class="w70"/><button class="add-btn" onclick="addStation()">+</button></div>`,
   };
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -1011,6 +1132,222 @@ function delVid(i){
   d.videos.splice(i,1);
   if(d.activeVideo===url)d.activeVideo=d.videos[0]?.url||null;
   sched();rfr('video');
+}
+
+
+// ── RADIO ─────────────────────────────────
+// global audio element – persists across re-renders
+let _radioAudio = null;
+let _radioPlaying = false;
+
+const DEFAULT_STATIONS = [
+  {name:'1LIVE',        url:'https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3',  genre:'Pop/Rock'},
+  {name:'Bayern 3',     url:'https://dispatcher.rndfnk.com/br/br3/live/mp3/mid',                           genre:'Pop'},
+  {name:'Radio Bob',    url:'https://streams.radiobob.de/bob-national/mp3-192/mediaplayer',                genre:'Rock'},
+  {name:'Deutschlandfunk',url:'https://st01.sslstream.dlf.de/dlf/01/128/mp3/stream.mp3',                  genre:'News'},
+  {name:'Jazz Radio',   url:'https://jazz-wr05.ice.infomaniak.ch/jazz-wr05-128.mp3',                       genre:'Jazz'},
+  {name:'Lofi Hip Hop', url:'https://listen.moe/stream',                                                   genre:'Lofi'},
+];
+
+function rRadio(cb){
+  const d=dd();
+  if(!d.stations) d.stations=[...DEFAULT_STATIONS];
+  if(d.activeStation===undefined) d.activeStation=null;
+
+  const active = d.stations.find(s=>s.url===d.activeStation);
+
+  const listHtml = d.stations.map((s,i)=>`
+    <div class="radio-item${s.url===d.activeStation?' active':''}" onclick="tuneStation('${esc(s.url)}')">
+      <div class="radio-item-dot"></div>
+      <span class="radio-item-name">${esc(s.name)}</span>
+      <span class="radio-item-genre">${esc(s.genre||'')}</span>
+      <span class="del" onclick="event.stopPropagation();delStation(${i})">×</span>
+    </div>`).join('');
+
+  cb.innerHTML=`
+    <div class="radio-player">
+      <div class="radio-now">
+        <div class="radio-vis${_radioPlaying?' playing':''}">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+            <rect x="1" y="7" width="14" height="8" rx="2"/>
+            <path d="M4 7L9 2l5 5"/>
+            <circle cx="11.5" cy="11" r="1.5" fill="currentColor" stroke="none"/>
+            <line x1="3" y1="11" x2="7" y2="11"/>
+          </svg>
+        </div>
+        <div class="radio-info">
+          <div class="radio-station">${active?esc(active.name):'Kein Sender'}</div>
+          <div class="radio-status${_radioPlaying?' live':''}">${_radioPlaying?'▶ Live':'Pausiert'}</div>
+        </div>
+        <div class="radio-controls">
+          <input type="range" class="radio-vol" id="rad-vol" min="0" max="1" step="0.05" value="${_radioAudio?_radioAudio.volume:0.8}" oninput="setVol(this.value)" style="width:70px"/>
+          <button class="radio-play" onclick="toggleRadio()">
+            ${_radioPlaying
+              ? `<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg>`
+              : `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>`
+            }
+          </button>
+        </div>
+      </div>
+      <div class="radio-list">${listHtml}</div>
+    </div>`;
+}
+
+function tuneStation(url){
+  const d=dd(); d.activeStation=url;
+  if(_radioAudio){ _radioAudio.pause(); _radioAudio=null; }
+  _radioPlaying=false;
+  sched(); rfr('radio');
+  // auto-play on tune
+  setTimeout(()=>startRadio(url), 80);
+}
+
+function startRadio(url){
+  if(_radioAudio){ _radioAudio.pause(); _radioAudio=null; }
+  _radioAudio = new Audio(url);
+  _radioAudio.volume = parseFloat(document.getElementById('rad-vol')?.value||0.8);
+  _radioAudio.crossOrigin='anonymous';
+  _radioAudio.play().then(()=>{
+    _radioPlaying=true; rfr('radio');
+  }).catch(()=>{
+    _radioPlaying=false; rfr('radio');
+  });
+  _radioAudio.addEventListener('error',()=>{ _radioPlaying=false; rfr('radio'); });
+}
+
+function toggleRadio(){
+  const d=dd();
+  if(!d.activeStation) return;
+  if(_radioPlaying && _radioAudio){
+    _radioAudio.pause(); _radioPlaying=false; rfr('radio');
+  } else {
+    startRadio(d.activeStation);
+  }
+}
+
+function setVol(v){
+  if(_radioAudio) _radioAudio.volume=parseFloat(v);
+}
+
+function addStation(){
+  const u=gv('rad-u'),n=gv('rad-n'),g=gv('rad-g');
+  if(!u||!u.startsWith('http'))return;
+  const d=dd(); if(!d.stations)d.stations=[];
+  d.stations.push({name:n||u,url:u,genre:g});
+  cl('rad-u');cl('rad-n');cl('rad-g');
+  sched(); rfr('radio');
+}
+
+function delStation(i){
+  const d=dd();
+  const url=d.stations[i]?.url;
+  if(url===d.activeStation){ if(_radioAudio){_radioAudio.pause();_radioAudio=null;}_radioPlaying=false; d.activeStation=null; }
+  d.stations.splice(i,1);
+  sched(); rfr('radio');
+}
+
+
+// ── INTERNET RADIO ────────────────────────
+let radioAudio = null;
+let radioPlaying = false;
+
+// built-in preset stations
+const PRESET_STATIONS = [
+  {name:'WKNR ESPN Cleveland', url:'https://14793.live.streamtheworld.com/WKNRAM.mp3', genre:'Sports Talk'},
+  {name:'1Live',               url:'https://wdr-1live-live.icecastssl.wdr.de/wdr/1live/live/mp3/128/stream.mp3', genre:'Pop / NRW'},
+  {name:'ByteFM',              url:'https://www.byte.fm/stream/bytefm.m3u', genre:'Indie / Alternative'},
+  {name:'Jazz Radio',          url:'https://jazz-wr05.ice.infomaniak.ch/jazz-wr05-128.mp3', genre:'Jazz'},
+  {name:'Radio Swiss Jazz',    url:'https://stream.srg-ssr.ch/m/rsj/mp3_128', genre:'Jazz'},
+  {name:'Chillhop Radio',      url:'https://streams.fluxfm.de/Chillhop/mp3-128/streams.fluxfm.de/', genre:'Lo-Fi / Chill'},
+];
+
+function rRadio(cb){
+  const d=dd(); if(!d.stations) d.stations=[];
+  const allStations=[...PRESET_STATIONS,...d.stations];
+  const active=d.activeStation||null;
+  const activeS=allStations.find(s=>s.url===active);
+
+  cb.innerHTML=`
+    <div class="radio-now">
+      <div class="radio-visualizer${radioPlaying?' ':' paused'}">
+        <div class="radio-bar"></div><div class="radio-bar"></div>
+        <div class="radio-bar"></div><div class="radio-bar"></div>
+        <div class="radio-bar"></div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div class="radio-name">${activeS?esc(activeS.name):'Kein Sender ausgewählt'}</div>
+        <div class="radio-genre">${activeS?esc(activeS.genre||''):'–'}</div>
+      </div>
+    </div>
+    <div class="radio-controls">
+      <button class="radio-play" onclick="toggleRadio()" id="radio-play-btn">
+        ${radioPlaying
+          ? `<svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="4" height="12" rx="1"/><rect x="9" y="2" width="4" height="12" rx="1"/></svg>`
+          : `<svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 2l10 6-10 6V2z"/></svg>`}
+      </button>
+      <input type="range" class="radio-vol" id="radio-vol" min="0" max="100" value="${d.volume??70}"
+        oninput="setVol(this.value)" style="--vol:${d.volume??70}%">
+    </div>
+    <div class="radio-stations">
+      ${allStations.map((s,i)=>`
+        <div class="rstation${s.url===active?' active':''}" onclick="selectStation('${esc(s.url)}','${esc(s.name)}','${esc(s.genre||'')}')">
+          <div class="rstation-dot"></div>
+          <div class="rstation-info">
+            <div class="rstation-name">${esc(s.name)}</div>
+            <div class="rstation-url">${esc(s.genre||s.url)}</div>
+          </div>
+          ${i>=PRESET_STATIONS.length?`<span class="del" onclick="event.stopPropagation();delStation(${i-PRESET_STATIONS.length})">×</span>`:''}
+        </div>`).join('')}
+    </div>`;
+}
+
+function selectStation(url,name,genre){
+  const d=dd();
+  d.activeStation=url;
+  radioPlaying=false;
+  if(radioAudio){radioAudio.pause();radioAudio=null;}
+  sched(); rfr('radio');
+  // auto-play on select
+  setTimeout(()=>toggleRadio(),100);
+}
+
+function toggleRadio(){
+  const d=dd();
+  if(!d.activeStation)return;
+  if(!radioAudio||radioAudio.src!==d.activeStation){
+    if(radioAudio)radioAudio.pause();
+    radioAudio=new Audio(d.activeStation);
+    radioAudio.volume=(d.volume??70)/100;
+    radioAudio.crossOrigin='anonymous';
+  }
+  if(radioPlaying){
+    radioAudio.pause(); radioPlaying=false;
+  } else {
+    radioAudio.play().catch(()=>{});
+    radioPlaying=true;
+  }
+  rfr('radio');
+}
+
+function setVol(v){
+  const d=dd(); d.volume=parseInt(v);
+  if(radioAudio)radioAudio.volume=v/100;
+  const input=document.getElementById('radio-vol');
+  if(input)input.style.setProperty('--vol',v+'%');
+  sched();
+}
+
+function addStation(){
+  const u=gv('rad-u'),n=gv('rad-n');
+  if(!u||!u.startsWith('http'))return;
+  const d=dd(); if(!d.stations)d.stations=[];
+  d.stations.push({name:n||u,url:u,genre:'Custom'});
+  cl('rad-u');cl('rad-n');sched();rfr('radio');
+}
+function delStation(i){
+  const d=dd();
+  if(d.stations[i]&&d.activeStation===d.stations[i].url){radioPlaying=false;if(radioAudio){radioAudio.pause();radioAudio=null;}d.activeStation=null;}
+  d.stations.splice(i,1);sched();rfr('radio');
 }
 
 // ── DRAG ──────────────────────────────────
