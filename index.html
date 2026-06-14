@@ -1418,7 +1418,7 @@ function delStation(i){
 // ── SPOTIFY (PKCE) ────────────────────────
 const SP_CLIENT_ID = 'e80d0dc23fc3450e998d9f715c8b9509';
 const SP_SCOPES = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing user-library-read user-top-read playlist-read-private';
-const SP_REDIRECT = window.location.href.split('#')[0].split('?')[0];
+const SP_REDIRECT = 'https://zekejohnherbert.github.io/MeineDash/';
 let spToken = null, spTab = 'library', spSearchQ = '', spSearchRes = [], spProgress = null;
 
 // PKCE helpers
@@ -1440,18 +1440,7 @@ async function spLogin(){
     '&scope=' + encodeURIComponent(SP_SCOPES) +
     '&code_challenge_method=S256' +
     '&code_challenge=' + challenge;
-  const popup = window.open(url, 'spotify-login', 'width=500,height=700,left=200,top=100');
-  // Listen for the popup writing the code to localStorage
-  window.addEventListener('storage', async function handler(e){
-    if(e.key !== 'bc_sp_code') return;
-    window.removeEventListener('storage', handler);
-    localStorage.removeItem('bc_sp_code');
-    const code = e.newValue;
-    if(code){
-      await spExchangeCode(code);
-      if(spToken){ spStartPolling(); if(window.Spotify) spInitPlayer(); rfr('spotify'); }
-    }
-  });
+  window.location.href = url;
 }
 
 async function spExchangeCode(code){
