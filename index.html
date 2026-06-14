@@ -660,6 +660,7 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
 .flex1{flex:1;min-width:0}.flex2{flex:2;min-width:0}
 .w60{width:60px}.w70{width:70px}.w80{width:80px}.w100{width:100px}.w110{width:110px}
 </style>
+<script src="https://sdk.scdn.co/spotify-player.js"></script>
 </head>
 <body class="desk-private">
 
@@ -1416,7 +1417,7 @@ function delStation(i){
 
 // ── SPOTIFY (PKCE) ────────────────────────
 const SP_CLIENT_ID = 'e80d0dc23fc3450e998d9f715c8b9509';
-const SP_SCOPES = 'user-read-playback-state user-modify-playback-state user-read-currently-playing user-library-read user-top-read playlist-read-private';
+const SP_SCOPES = 'streaming user-read-email user-read-private user-read-playback-state user-modify-playback-state user-read-currently-playing user-library-read user-top-read playlist-read-private';
 const SP_REDIRECT = window.location.href.split('#')[0].split('?')[0];
 let spToken = null, spTab = 'library', spSearchQ = '', spSearchRes = [], spProgress = null;
 
@@ -1498,13 +1499,15 @@ async function spInit(){
   } else {
     spToken = localStorage.getItem('bc_sp_tok');
   }
-  if(spToken) spStartPolling();
+  if(spToken){ spStartPolling(); if(window.Spotify) spInitPlayer(); }
 }
 
 function spLogout(){
   spToken = null;
   ['bc_sp_tok','bc_sp_ref','bc_sp_exp','bc_sp_cv'].forEach(k=>localStorage.removeItem(k));
   clearInterval(spPollI);
+  if(spPlayer){ spPlayer.disconnect(); spPlayer=null; }
+  spPlayerReady=false; spDeviceId=null;
   rfr('spotify');
 }
 
@@ -1566,32 +1569,119 @@ async function spSearch(q){
   return [...tracks,...artists,...albums];
 }
 
+// ── WEB PLAYBACK SDK ──────────────────────
+let spPlayer = null, spDeviceId = null, spPlayerReady = false;
+
+window.onSpotifyWebPlaybackSDKReady = () => {
+  if(!spToken) return;
+  spInitPlayer();
+};
+
+function spInitPlayer(){
+  if(spPlayer) { spPlayer.disconnect(); spPlayer = null; }
+  spPlayer = new Spotify.Player({
+    name: 'BASECAMP',
+    getOAuthToken: cb => { spEnsureToken().then(()=>cb(spToken)); },
+    volume: 0.8
+  });
+  spPlayer.addListener('ready', ({device_id}) => {
+    spDeviceId = device_id;
+    spPlayerReady = true;
+    rfr('spotify');
+  });
+  spPlayer.addListener('not_ready', () => {
+    spPlayerReady = false;
+    rfr('spotify');
+  });
+  spPlayer.addListener('player_state_changed', state => {
+    if(!state) return;
+    // Build spNowPlaying-compatible object from SDK state
+    spNowPlaying = {
+      is_playing: !state.paused,
+      progress_ms: state.position,
+      item: state.track_window?.current_track ? {
+        id: state.track_window.current_track.id,
+        uri: state.track_window.current_track.uri,
+        name: state.track_window.current_track.name,
+        duration_ms: state.track_window.current_track.duration_ms,
+        artists: state.track_window.current_track.artists,
+        album: {
+          name: state.track_window.current_track.album?.name||'',
+          images: state.track_window.current_track.album?.images||[]
+        }
+      } : null
+    };
+    spRfr();
+  });
+  spPlayer.addListener('account_error', ({message}) => spShowMsg('Account Fehler: '+message));
+  spPlayer.addListener('playback_error', ({message}) => spShowMsg('Playback Fehler: '+message));
+  spPlayer.connect();
+}
+
+async function spGetDevices(){
+  const r = await fetch('https://api.spotify.com/v1/me/player/devices', { headers:{Authorization:'Bearer '+spToken} });
+  if(!r.ok) return [];
+  const d = await r.json();
+  return d.devices||[];
+}
+
 async function spPlay(uri){
   if(!spToken) return;
+  const targetDevice = spPlayerReady ? spDeviceId : null;
+  if(!targetDevice){
+    // fallback: try any active device
+    const devices = await spGetDevices();
+    const active = devices.find(d=>d.is_active) || devices[0];
+    if(!active){ spShowMsg('Kein Spotify-Gerät aktiv.'); return; }
+  }
   const body = uri.includes(':track:') ? JSON.stringify({uris:[uri]}) : JSON.stringify({context_uri:uri});
-  await fetch('https://api.spotify.com/v1/me/player/play', {
-    method:'PUT', headers:{'Authorization':'Bearer '+spToken,'Content-Type':'application/json'}, body
-  });
-  setTimeout(spPollNow, 500);
+  const url = 'https://api.spotify.com/v1/me/player/play' + (targetDevice?'?device_id='+targetDevice:'');
+  const r = await fetch(url, { method:'PUT', headers:{'Authorization':'Bearer '+spToken,'Content-Type':'application/json'}, body });
+  if(!r.ok && r.status!==204) spShowMsg('Fehler ('+r.status+'). Ist Spotify offen?');
 }
 
 async function spPause(){
+  if(spPlayer && spPlayerReady){ spPlayer.togglePlay(); return; }
   if(!spToken) return;
   const playing = spNowPlaying?.is_playing;
-  const ep = playing ? '/me/player/pause' : '/me/player/play';
-  await fetch('https://api.spotify.com/v1'+ep, { method:'PUT', headers:{Authorization:'Bearer '+spToken} });
+  await fetch('https://api.spotify.com/v1/me/player/'+(playing?'pause':'play'), { method:'PUT', headers:{Authorization:'Bearer '+spToken} });
   setTimeout(spPollNow, 300);
 }
 
 async function spSkip(dir){
+  if(spPlayer && spPlayerReady){
+    dir > 0 ? spPlayer.nextTrack() : spPlayer.previousTrack();
+    return;
+  }
   if(!spToken) return;
   await fetch('https://api.spotify.com/v1/me/player/'+(dir>0?'next':'previous'), { method:'POST', headers:{Authorization:'Bearer '+spToken} });
   setTimeout(spPollNow, 500);
 }
 
+function spShowMsg(msg){
+  const el = document.getElementById('sp-msg');
+  if(el){ el.textContent=msg; el.style.display='block'; setTimeout(()=>el.style.display='none', 4000); }
+}
+
 function spFmt(ms){ const s=Math.round(ms/1000); return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60); }
 
-let spLibCache = null, spPlCache = null;
+async function spFetchAlbums(){
+  if(!spToken) return [];
+  const r = await fetch('https://api.spotify.com/v1/me/albums?limit=50', { headers:{Authorization:'Bearer '+spToken} });
+  if(!r.ok) return [];
+  const d = await r.json();
+  return d.items.map(i=>({ id:i.album.id, uri:i.album.uri, name:i.album.name, artist:i.album.artists.map(a=>a.name).join(', '), img:i.album.images[2]?.url||i.album.images[0]?.url, total:i.album.total_tracks }));
+}
+
+async function spFetchArtists(){
+  if(!spToken) return [];
+  const r = await fetch('https://api.spotify.com/v1/me/following?type=artist&limit=50', { headers:{Authorization:'Bearer '+spToken} });
+  if(!r.ok) return [];
+  const d = await r.json();
+  return (d.artists?.items||[]).map(a=>({ id:a.id, uri:a.uri, name:a.name, img:a.images[2]?.url||a.images[0]?.url, genres:a.genres?.slice(0,2).join(', ')||'' }));
+}
+
+let spAlCache = null, spArCache = null;
 
 async function rSpotify(cb){
   if(!spToken){ cb.innerHTML = spLoginHTML(); return; }
@@ -1623,15 +1713,21 @@ async function rSpotify(cb){
       <button class="sp-btn" onclick="spSkip(1)" title="Weiter"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M13 2h-1.5v5.1L3 2v12l8.5-5.1V14H13V2z"/></svg></button>
     </div>`;
   } else {
-    nowHTML = '<div class="sp-empty">Nichts läuft gerade.</div>';
+    nowHTML = `<div class="sp-empty">Nichts läuft gerade.</div>`;
   }
+  const playerStatus = spPlayerReady
+    ? `<div style="font-size:10px;color:#1db954;margin-bottom:6px">● BASECAMP Player aktiv</div>`
+    : `<div style="font-size:10px;color:var(--text3);margin-bottom:6px">○ Player verbindet…</div>`;
 
   // Tabs
-  const tabsHTML = `<div class="sp-tabs">
-    <button class="sp-tab${spTab==='library'?' active':''}" onclick="spSetTab('library')">Bibliothek</button>
+  const tabsHTML = `<div class="sp-tabs" style="flex-wrap:wrap;gap:3px">
+    <button class="sp-tab${spTab==='library'?' active':''}" onclick="spSetTab('library')">Tracks</button>
+    <button class="sp-tab${spTab==='albums'?' active':''}" onclick="spSetTab('albums')">Alben</button>
+    <button class="sp-tab${spTab==='artists'?' active':''}" onclick="spSetTab('artists')">Künstler</button>
     <button class="sp-tab${spTab==='playlists'?' active':''}" onclick="spSetTab('playlists')">Playlists</button>
     <button class="sp-tab${spTab==='search'?' active':''}" onclick="spSetTab('search')">Suche</button>
-  </div>`;
+  </div>
+  <div id="sp-msg" style="display:none;font-size:11px;color:#ef4444;padding:4px 8px;background:rgba(239,68,68,.1);border-radius:6px;margin-bottom:6px"></div>`;
 
   let listHTML = '';
 
@@ -1666,6 +1762,30 @@ async function rSpotify(cb){
           <div class="sp-item-dur">${spFmt(item.duration)}</div>
         </div>`).join('') + '</div>';
     }
+  } else if(spTab === 'albums'){
+    if(!spAlCache){ spLoadAl(cb); listHTML += '<div class="sp-empty">Lädt…</div>'; }
+    else {
+      listHTML += '<div class="sp-list">' + spAlCache.map(al=>`
+        <div class="sp-item" onclick="spPlay('${esc(al.uri)}')">
+          ${al.img ? `<img class="sp-item-img" src="${esc(al.img)}" alt="">` : '<div class="sp-item-img"></div>'}
+          <div class="sp-item-info">
+            <div class="sp-item-name">${esc(al.name)}</div>
+            <div class="sp-item-sub">${esc(al.artist)} · ${al.total} Tracks</div>
+          </div>
+        </div>`).join('') + '</div>';
+    }
+  } else if(spTab === 'artists'){
+    if(!spArCache){ spLoadAr(cb); listHTML += '<div class="sp-empty">Lädt…</div>'; }
+    else {
+      listHTML += '<div class="sp-list">' + spArCache.map(ar=>`
+        <div class="sp-item" onclick="spPlay('${esc(ar.uri)}')">
+          ${ar.img ? `<img class="sp-item-img" src="${esc(ar.img)}" alt="" style="border-radius:50%">` : '<div class="sp-item-img" style="border-radius:50%"></div>'}
+          <div class="sp-item-info">
+            <div class="sp-item-name">${esc(ar.name)}</div>
+            <div class="sp-item-sub">${esc(ar.genres)||'Artist'}</div>
+          </div>
+        </div>`).join('') + '</div>';
+    }
   } else if(spTab === 'playlists'){
     if(!spPlCache){ spLoadPl(cb); listHTML += '<div class="sp-empty">Lädt…</div>'; }
     else {
@@ -1680,7 +1800,7 @@ async function rSpotify(cb){
     }
   }
 
-  cb.innerHTML = nowHTML + tabsHTML + listHTML +
+  cb.innerHTML = playerStatus + nowHTML + tabsHTML + listHTML +
     '<div style="text-align:right;margin-top:6px"><button onclick="spLogout()" style="background:none;border:none;color:var(--text3);font-size:10px;cursor:pointer;">Logout</button></div>';
 }
 
@@ -1692,10 +1812,12 @@ function spLoginHTML(){
   </div>`;
 }
 
-function spSetTab(t){ spTab=t; if(t==='library'&&!spLibCache)spLibCache=null; if(t==='playlists'&&!spPlCache)spPlCache=null; rfr('spotify'); }
+function spSetTab(t){ spTab=t; rfr('spotify'); }
 
 async function spLoadLib(cb){ spLibCache=await spFetchLibrary(); rfr('spotify'); }
 async function spLoadPl(cb){ spPlCache=await spFetchPlaylists(); rfr('spotify'); }
+async function spLoadAl(cb){ spAlCache=await spFetchAlbums(); rfr('spotify'); }
+async function spLoadAr(cb){ spArCache=await spFetchArtists(); rfr('spotify'); }
 
 async function spDoSearch(){
   spSearchQ = document.getElementById('sp-q')?.value?.trim()||'';
