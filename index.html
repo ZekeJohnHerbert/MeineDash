@@ -611,6 +611,132 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
 .done{ text-decoration:line-through; color:var(--text3); }
 .flex1{flex:1;min-width:0}.flex2{flex:2;min-width:0}
 .w60{width:60px}.w70{width:70px}.w80{width:80px}.w100{width:100px}.w110{width:110px}
+
+/* ── MOBILE ───────────────────────────────── */
+@media (max-width: 768px) {
+
+  /* Header */
+  header{
+    padding:.6rem .9rem;
+    gap:8px;
+    flex-wrap:nowrap;
+  }
+  .wordmark svg{ width:44px !important; height:33px !important; }
+  .wordmark-text{ font-size:13px !important; }
+  #desk-name{ display:none; }
+  .switcher{ margin-left:0; }
+  .sw-btn{ padding:5px 10px; font-size:11px; }
+  .sw-btn svg{ display:none; }
+  #clock{ display:none; }
+  #sync-pill span{ display:none; }
+  #sync-pill{ padding:5px 8px; }
+
+  /* Desk becomes vertical scroll stack */
+  #desk{
+    position:relative !important;
+    display:flex !important;
+    flex-direction:column !important;
+    gap:12px !important;
+    padding:12px !important;
+    min-height:unset !important;
+    width:100% !important;
+    overflow-x:hidden !important;
+  }
+
+  /* Cards: full width, static position */
+  .card{
+    position:relative !important;
+    left:auto !important; top:auto !important;
+    width:100% !important;
+    height:auto !important;
+    max-width:100% !important;
+    box-sizing:border-box !important;
+  }
+
+  /* Disable drag on mobile (touch handles it) */
+  .card-head{ cursor:default; }
+
+  /* Resize handle hidden on mobile */
+  .card-resize{ display:none !important; }
+
+  /* Lib panel: slide from bottom as sheet */
+  .lib-panel{
+    top:auto !important;
+    bottom:0 !important;
+    left:0 !important;
+    right:0 !important;
+    width:100% !important;
+    height:75vh !important;
+    border-left:none !important;
+    border-top:1px solid rgba(255,255,255,0.9) !important;
+    border-radius:20px 20px 0 0 !important;
+    transform:translateY(100%) !important;
+    box-shadow:0 -8px 40px rgba(0,0,0,0.15) !important;
+  }
+  .lib-panel.open{ transform:translateY(0) !important; }
+
+  /* Lib panel drag handle */
+  .lib-panel::before{
+    content:'';
+    display:block;
+    width:36px; height:4px;
+    background:rgba(0,0,0,0.15);
+    border-radius:2px;
+    margin:10px auto 0;
+  }
+
+  /* Wallpaper panel full width */
+  #wp-panel{
+    left:12px !important;
+    right:12px !important;
+    width:auto !important;
+    top:56px !important;
+  }
+
+  /* Inputs bigger touch targets */
+  input[type=text],input[type=url],input[type=date],select{
+    padding:9px 12px;
+    font-size:14px;
+  }
+  .add-btn{
+    padding:9px 14px;
+    font-size:13px;
+  }
+  .hdr-btn{
+    width:36px; height:36px;
+  }
+
+  /* Card body padding smaller */
+  .card-body{ padding:10px 12px; }
+  .add-area{ padding:10px 12px; }
+
+  /* MLB team grid bigger touch targets */
+  .mlb-grid button{ padding:8px !important; font-size:12px !important; }
+
+  /* Notes tabs wrap */
+  .note-tabs{ flex-wrap:wrap; }
+
+  /* Weather bigger */
+  .weath-temp{ font-size:42px !important; }
+
+  /* Calendar cells bigger */
+  .cal-cell{ min-height:32px; }
+
+  /* Radio/MP3 controls bigger */
+  .radio-play{ width:44px !important; height:44px !important; }
+
+  /* Hide card close button always visible on mobile */
+  .card-close{ opacity:1 !important; }
+}
+
+@media (max-width: 480px) {
+  header{ padding:.5rem .75rem; }
+  .wordmark svg{ width:36px !important; height:27px !important; }
+  .wordmark-text{ font-size:12px !important; letter-spacing:.06em !important; }
+  .sw-btn{ padding:4px 8px; font-size:11px; }
+  #desk{ padding:8px !important; gap:8px !important; }
+  .card-body{ padding:8px 10px; }
+}
 </style>
 </head>
 <body class="desk-private">
@@ -883,9 +1009,15 @@ function renderDesk(){
     if(!el){el=mkCard(def);desk.appendChild(el);}
     if(!ds.pos[def.id])ds.pos[def.id]=defPos(def.id,cur);
     const p=ds.pos[def.id];
-    el.style.left=p.x+'px';el.style.top=p.y+'px';
-    if(p.w)el.style.width=p.w+'px';
-    if(p.h)el.style.height=p.h+'px';
+    const mobile = window.innerWidth <= 768;
+    if(!mobile){
+      el.style.left=p.x+'px'; el.style.top=p.y+'px';
+      if(p.w) el.style.width=p.w+'px';
+      if(p.h) el.style.height=p.h+'px';
+    } else {
+      el.style.left=''; el.style.top='';
+      el.style.width=''; el.style.height='';
+    }
     rContent(def.id,el);
   });
 }
@@ -1642,6 +1774,7 @@ tick();setInterval(tick,1000);
 setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.querySelectorAll('.card').forEach(c=>{m=Math.max(m,c.offsetTop+c.offsetHeight+40);});desk.style.minHeight=m+'px';},500);
 
 (async()=>{ await init(); wpInit(); })();
+window.addEventListener('resize', ()=>{ renderDesk(); });
 </script>
 </body>
 </html>
