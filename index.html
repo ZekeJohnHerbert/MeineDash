@@ -384,9 +384,7 @@ body.desk-work .lib-item.active{ background:rgba(5,150,105,0.08); }
 .card.dragging{ box-shadow:var(--shadow-lg), 0 0 0 2px var(--accent); border-color:rgba(255,255,255,0.95); z-index:50 !important; }
 
 /* top accent line */
-.card-accent{
-  height:2px; background:var(--grad);
-}
+.card-accent{ display:none; }
 
 .card-head{
   display:flex; align-items:center; gap:10px;
@@ -748,6 +746,7 @@ const ICONS = {
   calc:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="1" width="12" height="14" rx="2"/><rect x="4.5" y="3" width="7" height="3" rx="1"/><circle cx="5" cy="9" r=".8" fill="currentColor"/><circle cx="8" cy="9" r=".8" fill="currentColor"/><circle cx="11" cy="9" r=".8" fill="currentColor"/><circle cx="5" cy="12" r=".8" fill="currentColor"/><circle cx="8" cy="12" r=".8" fill="currentColor"/><rect x="9.5" y="10.5" width="3" height="3" rx=".5" fill="currentColor" stroke="none"/></svg>`,
   pinboard:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l4 4-5.5 1L5 10.5 2 14M10 2L5 7 3.5 11.5"/><circle cx="12" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
   mp3:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 10V6l4 2-4 2z" fill="currentColor" stroke="none"/></svg>`,
+  mlb:`<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 8c0-2.2 1.8-4 4-4M8 12c2.2 0 4-1.8 4-4" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M6 5.5c.5 1 .5 4 0 5M10 5.5c-.5 1-.5 4 0 5" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
   video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
   radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L10 2"/><circle cx="11.5" cy="11.5" r="1.5"/><line x1="4" y1="10" x2="4" y2="12"/><line x1="7" y1="10" x2="7" y2="13"/></svg>`,
@@ -755,17 +754,8 @@ const ICONS = {
 };
 
 // card icon bg colors
-const ICON_BG = {
-  weather:'rgba(6,182,212,.15)',calendar:'rgba(239,68,68,.15)',shopping:'rgba(245,158,11,.15)',mp3:'rgba(168,85,247,.15)',
-  watchlist:'rgba(139,92,246,.15)',links:'rgba(6,182,212,.15)',countdown:'rgba(236,72,153,.15)',
-  gaming:'rgba(16,185,129,.15)',music:'rgba(251,146,60,.15)',notes:'rgba(234,179,8,.15)',
-  calc:'rgba(59,130,246,.15)',pinboard:'rgba(239,68,68,.15)',bloomify:'rgba(16,185,129,.15)',video:'rgba(239,68,68,.15)',radio:'rgba(6,182,212,.15)',radio:'rgba(6,182,212,.15)',
-};
-const ICON_COLOR = {
-  weather:'#22d3ee',calendar:'#f87171',shopping:'#fbbf24',watchlist:'#a78bfa',mp3:'#a855f7',
-  links:'#22d3ee',countdown:'#f472b6',gaming:'#34d399',music:'#fb923c',
-  notes:'#fde047',calc:'#60a5fa',pinboard:'#f87171',bloomify:'#34d399',video:'#f87171',radio:'#22d3ee',radio:'#22d3ee',
-};
+const ICON_BG = {};
+const ICON_COLOR = {};
 
 // ── CARD DEFINITIONS ──────────────────────
 const DEFS=[
@@ -783,6 +773,7 @@ const DEFS=[
   {id:'bloomify', name:'Bloomify',     desc:'Links & Textbausteine',   desks:['work']},
   {id:'video',    name:'Video Player', desc:'YouTube & direkte URLs',  desks:['private','work']},
   {id:'radio',    name:'Internet Radio', desc:'Sender streamen',        desks:['private','work']},
+  {id:'mlb',      name:'MLB',           desc:'Baseball Scores & Standings', desks:['private','work']},
   {id:'mp3',      name:'MP3 Player',    desc:'Cloud-Dateien abspielen',  desks:['private','work']},
 ];
 
@@ -877,7 +868,7 @@ function renderLib(){
   const avail=DEFS.filter(d=>d.desks.includes(cur));
   document.getElementById('lib-list').innerHTML=avail.map(d=>`
     <div class="lib-item${ds.cards[d.id]?' active':''}" onclick="togCard('${d.id}')">
-      <div class="lib-icon" style="background:${ICON_BG[d.id]||'var(--surface)'};color:${ICON_COLOR[d.id]||'var(--text2)'}">
+      <div class="lib-icon" style="background:#1a1a2e;color:#fff;box-shadow:0 0 0 1.5px rgba(255,255,255,0.5)">
         ${ICONS[d.id]||''}
       </div>
       <div>
@@ -914,9 +905,8 @@ function mkCard(def){
   const el=document.createElement('div');
   el.className='card';el.dataset.id=def.id;el.style.zIndex=zC++;
   el.innerHTML=`
-    <div class="card-accent"></div>
     <div class="card-head">
-      <div class="ch-icon" style="background:${ICON_BG[def.id]||'var(--surface)'};color:${ICON_COLOR[def.id]||'var(--text2)'}">
+      <div class="ch-icon" style="background:#1a1a2e;color:#fff;box-shadow:0 0 0 1.5px rgba(255,255,255,0.6)">
         ${ICONS[def.id]||''}
       </div>
       <h2>${def.name}</h2>
@@ -950,7 +940,7 @@ function cFooter(id){
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3,mlb:rMlb})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -1390,6 +1380,124 @@ function mp3Seek(e,el){ if(mp3Audio&&mp3Audio.duration) mp3Audio.currentTime=(e.
 
 function addMp3(){ const u=gv('mp3-u'),t=gv('mp3-t'); if(!u||!u.startsWith('http'))return; const d=dd();if(!d.mp3tracks)d.mp3tracks=[];d.mp3tracks.push({url:u,title:t||u.split('/').pop()});cl('mp3-u');cl('mp3-t');sched();rfr('mp3'); }
 function delMp3(i){ const d=dd();if(mp3Idx===i){if(mp3Audio)mp3Audio.pause();mp3Audio=null;mp3Playing=false;mp3Idx=null;}else if(mp3Idx>i)mp3Idx--;d.mp3tracks.splice(i,1);sched();rfr('mp3'); }
+
+// ── MLB ────────────────────────────────────
+const MLB_TEAMS = [
+  {id:111,name:'Red Sox',abbr:'BOS'},{id:147,name:'Yankees',abbr:'NYY'},
+  {id:141,name:'Blue Jays',abbr:'TOR'},{id:139,name:'Rays',abbr:'TB'},
+  {id:110,name:'Orioles',abbr:'BAL'},{id:116,name:'Tigers',abbr:'DET'},
+  {id:142,name:'Twins',abbr:'MIN'},{id:145,name:'White Sox',abbr:'CWS'},
+  {id:114,name:'Guardians',abbr:'CLE'},{id:118,name:'Royals',abbr:'KC'},
+  {id:117,name:'Astros',abbr:'HOU'},{id:140,name:'Rangers',abbr:'TEX'},
+  {id:133,name:'Athletics',abbr:'OAK'},{id:108,name:'Angels',abbr:'LAA'},
+  {id:136,name:'Mariners',abbr:'SEA'},{id:143,name:'Phillies',abbr:'PHI'},
+  {id:121,name:'Mets',abbr:'NYM'},{id:120,name:'Nationals',abbr:'WSH'},
+  {id:144,name:'Braves',abbr:'ATL'},{id:146,name:'Marlins',abbr:'MIA'},
+  {id:112,name:'Cubs',abbr:'CHC'},{id:113,name:'Reds',abbr:'CIN'},
+  {id:158,name:'Brewers',abbr:'MIL'},{id:134,name:'Pirates',abbr:'PIT'},
+  {id:138,name:'Cardinals',abbr:'STL'},{id:137,name:'Giants',abbr:'SF'},
+  {id:119,name:'Dodgers',abbr:'LAD'},{id:109,name:'Diamondbacks',abbr:'ARI'},
+  {id:115,name:'Rockies',abbr:'COL'},{id:135,name:'Padres',abbr:'SD'},
+];
+
+let mlbData = null, mlbLoading = false;
+
+async function rMlb(cb){
+  const d = dd();
+  if(!d.mlbTeamId){
+    // Team picker
+    cb.innerHTML = `
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:600;letter-spacing:.04em">DEIN TEAM WÄHLEN</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-height:220px;overflow-y:auto">
+        ${MLB_TEAMS.map(t=>`<button onclick="mlbSetTeam(${t.id})" style="padding:5px 4px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:10px;font-weight:600;cursor:pointer;color:var(--text2);font-family:inherit;transition:all .15s" onmouseover="this.style.background='var(--accent)';this.style.color='#fff'" onmouseout="this.style.background='var(--surface2)';this.style.color='var(--text2)'">${t.abbr}</button>`).join('')}
+      </div>`;
+    return;
+  }
+
+  const team = MLB_TEAMS.find(t=>t.id===d.mlbTeamId);
+
+  if(!mlbData || mlbData._teamId !== d.mlbTeamId){
+    cb.innerHTML = '<div class="empty">Lädt…</div>';
+    mlbLoading = true;
+    try {
+      const [gamesRes, standRes] = await Promise.all([
+        fetch(`https://statsapi.mlb.com/api/v1/schedule?teamId=${d.mlbTeamId}&season=2025&gameType=R&hydrate=team&sportId=1`),
+        fetch(`https://statsapi.mlb.com/api/v1/standings?leagueId=103,104&season=2025&standingsType=regularSeason&hydrate=team,division`)
+      ]);
+      const games = await gamesRes.json();
+      const stand = await standRes.json();
+      mlbData = { games: games.dates||[], standings: stand.records||[], _teamId: d.mlbTeamId };
+    } catch(e){
+      cb.innerHTML = '<div class="empty">Fehler beim Laden.</div>'; return;
+    }
+  }
+
+  // Find last result and next game
+  const today = new Date(); today.setHours(0,0,0,0);
+  const allGames = mlbData.games.flatMap(d=>d.games||[]);
+  const past = allGames.filter(g=>new Date(g.gameDate)<today && g.status?.detailedState==='Final');
+  const upcoming = allGames.filter(g=>new Date(g.gameDate)>=today);
+  const last = past[past.length-1];
+  const next = upcoming[0];
+
+  // Standings for team's division
+  let teamStand = null;
+  for(const rec of mlbData.standings){
+    const entry = rec.teamRecords?.find(r=>r.team.id===d.mlbTeamId);
+    if(entry){ teamStand = { gb: entry.gamesBack, w: entry.wins, l: entry.losses, rank: entry.divisionRank, div: rec.division?.nameShort||'' }; break; }
+  }
+
+  const fmtDate = s => new Date(s).toLocaleDateString('de-DE',{day:'2-digit',month:'2-digit'});
+  const fmtGame = g => {
+    if(!g) return '';
+    const home = g.teams?.home; const away = g.teams?.away;
+    const isHome = home?.team?.id === d.mlbTeamId;
+    const opp = isHome ? away?.team?.abbreviation : home?.team?.abbreviation;
+    const score = g.status?.detailedState==='Final'
+      ? `${away?.score??'–'} – ${home?.score??'–'}`
+      : new Date(g.gameDate).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
+    const won = g.status?.detailedState==='Final' && (isHome ? home?.score>away?.score : away?.score>home?.score);
+    return { opp, score, date: fmtDate(g.gameDate), isHome, won, final: g.status?.detailedState==='Final' };
+  };
+
+  const lg = last ? fmtGame(last) : null;
+  const ng = next ? fmtGame(next) : null;
+
+  cb.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:var(--text)">${team?.abbr}</div>
+        <div style="font-size:11px;color:var(--text3)">${team?.name}</div>
+      </div>
+      ${teamStand ? `<div style="text-align:right">
+        <div style="font-size:14px;font-weight:700;color:var(--text)">${teamStand.w}–${teamStand.l}</div>
+        <div style="font-size:10px;color:var(--text3)">${teamStand.div} · ${teamStand.gb==='—'?'1st':`GB ${teamStand.gb}`}</div>
+      </div>` : ''}
+    </div>
+    ${lg ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 10px;margin-bottom:6px">
+      <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:4px">LETZTES SPIEL · ${lg.date}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:12px;color:var(--text2)">${lg.isHome?'vs':'@'} ${lg.opp}</div>
+        <div style="font-size:13px;font-weight:700;color:${lg.won?'#16a34a':'#dc2626'}">${lg.score}</div>
+        <div style="font-size:11px;font-weight:700;color:${lg.won?'#16a34a':'#dc2626'}">${lg.won?'W':'L'}</div>
+      </div>
+    </div>` : ''}
+    ${ng ? `<div style="background:var(--surface2);border-radius:8px;padding:8px 10px">
+      <div style="font-size:10px;color:var(--text3);font-weight:600;margin-bottom:4px">NÄCHSTES SPIEL · ${ng.date}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:12px;color:var(--text2)">${ng.isHome?'vs':'@'} ${ng.opp}</div>
+        <div style="font-size:12px;color:var(--text2)">${ng.score} Uhr</div>
+      </div>
+    </div>` : ''}
+    <div style="display:flex;justify-content:space-between;margin-top:8px;align-items:center">
+      <button onclick="mlbRefresh()" style="background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:0">↻ Aktualisieren</button>
+      <button onclick="mlbReset()" style="background:none;border:none;font-size:10px;color:var(--text3);cursor:pointer;padding:0">Team ändern</button>
+    </div>`;
+}
+
+function mlbSetTeam(id){ const d=dd(); d.mlbTeamId=id; mlbData=null; sched(); rfr('mlb'); }
+function mlbReset(){ const d=dd(); d.mlbTeamId=null; mlbData=null; sched(); rfr('mlb'); }
+function mlbRefresh(){ mlbData=null; rfr('mlb'); }
 
 
 // ── WALLPAPER ─────────────────────────────
