@@ -11,49 +11,50 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:       #131929;
-  --bg2:      #1a2236;
-  --bg3:      #1f2a40;
-  --bg4:      #253148;
-  --surface:  rgba(255,255,255,0.06);
-  --surface2: rgba(255,255,255,0.10);
-  --border:   rgba(255,255,255,0.10);
-  --border2:  rgba(255,255,255,0.18);
-  --text:     #f0f4ff;
-  --text2:    #8892b0;
-  --text3:    #6070a0;
+  --bg:       #f0f2f8;
+  --bg2:      #e8eaf2;
+  --bg3:      #dfe2ee;
+  --bg4:      #d5d9e8;
+  --surface:  rgba(255,255,255,0.55);
+  --surface2: rgba(255,255,255,0.75);
+  --surface3: rgba(255,255,255,0.35);
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.14);
+  --text:     #1a1d2e;
+  --text2:    #4a5070;
+  --text3:    #8890b0;
 
   /* private desk */
-  --a1: #7c3aed;
-  --a2: #2563eb;
-  --a3: #06b6d4;
-  --grad: linear-gradient(135deg, #7c3aed, #2563eb, #06b6d4);
-  --grad-soft: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(37,99,235,0.15), rgba(6,182,212,0.1));
-  --accent: #7c3aed;
-  --glow: rgba(124,58,237,0.3);
+  --a1: #5b21b6;
+  --a2: #1d4ed8;
+  --a3: #0891b2;
+  --grad: linear-gradient(135deg, #5b21b6, #1d4ed8, #0891b2);
+  --grad-soft: linear-gradient(135deg, rgba(91,33,182,0.12), rgba(29,78,216,0.10), rgba(8,145,178,0.08));
+  --accent: #5b21b6;
+  --glow: rgba(91,33,182,0.15);
 
-  --radius: 16px;
-  --radius-sm: 10px;
-  --radius-xs: 6px;
-  --shadow: 0 4px 24px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
-  --shadow-lg: 0 16px 48px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
+  --radius: 20px;
+  --radius-sm: 14px;
+  --radius-xs: 8px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.05);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06);
 }
 
 body.desk-work{
-  --a1: #059669;
-  --a2: #0891b2;
-  --a3: #7c3aed;
-  --grad: linear-gradient(135deg, #059669, #0891b2, #7c3aed);
-  --grad-soft: linear-gradient(135deg, rgba(5,150,105,0.15), rgba(8,145,178,0.15), rgba(124,58,237,0.1));
-  --accent: #059669;
-  --glow: rgba(5,150,105,0.3);
+  --a1: #065f46;
+  --a2: #0369a1;
+  --a3: #5b21b6;
+  --grad: linear-gradient(135deg, #065f46, #0369a1, #5b21b6);
+  --grad-soft: linear-gradient(135deg, rgba(6,95,70,0.12), rgba(3,105,161,0.10), rgba(91,33,182,0.08));
+  --accent: #065f46;
+  --glow: rgba(6,95,70,0.15);
 }
 
 body{
   font-family:'Inter',system-ui,sans-serif;
   font-size:13px; line-height:1.5;
   color:var(--text);
-  background:rgba(10,14,28,0.9);
+  background:var(--bg);
   min-height:100vh;
   overflow-x:hidden;
 }
@@ -63,19 +64,17 @@ body::before{
   content:'';
   position:fixed; inset:0; z-index:0; pointer-events:none;
   background:
-    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(124,58,237,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(6,182,212,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 60% 10%, rgba(37,99,235,0.12) 0%, transparent 50%);
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(139,92,246,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 85% 85%, rgba(6,182,212,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 60% 5%, rgba(59,130,246,0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 40% 40% at 90% 20%, rgba(236,72,153,0.08) 0%, transparent 50%);
 }
 body.desk-work::before{
   background:
-    radial-gradient(ellipse 60% 40% at 20% 20%, rgba(5,150,105,0.18) 0%, transparent 60%),
-    radial-gradient(ellipse 50% 50% at 80% 80%, rgba(8,145,178,0.14) 0%, transparent 60%),
-    radial-gradient(ellipse 40% 60% at 60% 10%, rgba(124,58,237,0.12) 0%, transparent 50%);
+    radial-gradient(ellipse 70% 50% at 15% 10%, rgba(16,185,129,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 60% at 85% 85%, rgba(8,145,178,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 70% at 60% 5%, rgba(91,33,182,0.12) 0%, transparent 55%);
 }
-
-
-/* ── VIDEO PLAYER ── */
 .vid-player{
   width:100%; aspect-ratio:16/9; background:#000; border-radius:var(--radius-sm);
   overflow:hidden; position:relative; margin-bottom:10px;
@@ -240,9 +239,11 @@ header{
   position:sticky; top:0; z-index:100;
   display:flex; align-items:center; gap:12px;
   padding:.75rem 1.25rem;
-  background:rgba(15,22,40,0.85);
-  backdrop-filter:blur(20px) saturate(180%);
-  border-bottom:1px solid var(--border);
+  background:rgba(255,255,255,0.65);
+  backdrop-filter:blur(28px) saturate(200%);
+  -webkit-backdrop-filter:blur(28px) saturate(200%);
+  border-bottom:1px solid rgba(255,255,255,0.8);
+  box-shadow:0 1px 0 rgba(0,0,0,0.06);
 }
 
 .wordmark{
@@ -256,13 +257,13 @@ header{
 }
 .wordmark-icon svg{ width:16px; height:16px; }
 .wordmark-text{
-  font-size:15px; font-weight:800; letter-spacing:.1em; color:#fff;
+  font-size:15px; font-weight:800; letter-spacing:.1em; color:var(--text);
 }
 
 /* desk switcher */
 .switcher{
-  display:flex; background:var(--bg3);  border-radius:10px;
-  padding:3px; border:1px solid var(--border); margin-left:6px;
+  display:flex; background:rgba(0,0,0,0.06); border-radius:10px;
+  padding:3px; border:1px solid rgba(0,0,0,0.08); margin-left:6px;
 }
 .sw-btn{
   padding:5px 14px; border-radius:7px; border:none; cursor:pointer;
@@ -271,9 +272,9 @@ header{
   display:flex; align-items:center; gap:6px;
 }
 .sw-btn.active{
-  background:var(--grad);
-  color:#fff;
-  box-shadow:0 2px 12px var(--glow);
+  background:rgba(255,255,255,0.9);
+  color:var(--text);
+  box-shadow:0 1px 6px rgba(0,0,0,0.12);
 }
 .sw-btn svg{ width:13px; height:13px; opacity:.8; }
 
@@ -365,11 +366,12 @@ body.desk-work .lib-item.active{ background:rgba(5,150,105,0.08); }
 /* ── CARDS ── */
 .card{
   position:absolute; width:300px;
-  background:rgba(22,30,52,0.88);
-  backdrop-filter:blur(20px) saturate(150%);
-  border:1px solid var(--border);
+  background:rgba(255,255,255,0.58);
+  backdrop-filter:blur(28px) saturate(180%);
+  -webkit-backdrop-filter:blur(28px) saturate(180%);
+  border:1px solid rgba(255,255,255,0.8);
   border-radius:var(--radius);
-  box-shadow:var(--shadow);
+  box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,0.9);
   transition:box-shadow .2s, border-color .2s;
   overflow:hidden;
 }
@@ -377,20 +379,19 @@ body.desk-work .lib-item.active{ background:rgba(5,150,105,0.08); }
   content:''; position:absolute; inset:0; border-radius:var(--radius);
   background:var(--grad-soft); pointer-events:none; opacity:0; transition:opacity .3s;
 }
-.card:hover{ border-color:var(--border2); box-shadow:var(--shadow-lg), 0 0 0 1px rgba(255,255,255,0.05); }
+.card:hover{ border-color:rgba(255,255,255,0.95); box-shadow:var(--shadow-lg), inset 0 1px 0 rgba(255,255,255,0.95); }
 .card:hover::before{ opacity:1; }
-.card.dragging{ box-shadow:var(--shadow-lg), 0 0 30px var(--glow); border-color:var(--accent); z-index:50 !important; }
+.card.dragging{ box-shadow:var(--shadow-lg), 0 0 0 2px var(--accent); border-color:rgba(255,255,255,0.95); z-index:50 !important; }
 
 /* top accent line */
 .card-accent{
   height:2px; background:var(--grad);
-  box-shadow:0 0 12px var(--glow);
 }
 
 .card-head{
   display:flex; align-items:center; gap:10px;
   padding:13px 14px 11px; cursor:grab;
-  border-bottom:1px solid var(--border);
+  border-bottom:1px solid rgba(0,0,0,0.06);
 }
 .card-head:active{ cursor:grabbing; }
 .ch-icon{
@@ -406,7 +407,7 @@ body.desk-work .lib-item.active{ background:rgba(5,150,105,0.08); }
   opacity:0; transition:all .15s;
 }
 .card:hover .card-close{ opacity:1; }
-.card-close:hover{ background:rgba(239,68,68,0.15); color:#ef4444; }
+.card-close:hover{ background:rgba(239,68,68,0.12); color:#dc2626; }
 
 .card-body{ padding:12px 14px; }
 
@@ -418,7 +419,7 @@ body.desk-work .lib-item.active{ background:rgba(5,150,105,0.08); }
 .card:hover .card-resize{ opacity:1; }
 .card-resize svg{ width:12px; height:12px; }
 
-/* ── ROWS ── */
+/* ── ROWS ── 
 .row{ display:flex; align-items:center; gap:8px; padding:7px 0; border-bottom:1px solid var(--border); font-size:12px; }
 .row:last-child{ border-bottom:none; }
 .rl{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--text); }
@@ -647,23 +648,23 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
     <div style="display:flex;align-items:center;gap:10px">
       <svg viewBox="0 0 44 32" fill="none" xmlns="http://www.w3.org/2000/svg" style="width:44px;height:32px;display:block;flex-shrink:0">
         <!-- Ground -->
-        <line x1="2" y1="27" x2="42" y2="27" stroke="rgba(255,255,255,0.2)" stroke-width="1.2" stroke-linecap="round"/>
+        <line x1="2" y1="27" x2="42" y2="27" stroke="rgba(0,0,0,0.15)" stroke-width="1.2" stroke-linecap="round"/>
         <!-- Left tent panel -->
-        <path d="M22 4 L4 27" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M22 4 L4 27" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
         <!-- Right tent panel -->
-        <path d="M22 4 L40 27" stroke="rgba(255,255,255,0.9)" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M22 4 L40 27" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" opacity="0.9"/>
         <!-- Fill -->
-        <path d="M22 4 L4 27 L40 27 Z" fill="rgba(255,255,255,0.07)"/>
+        <path d="M22 4 L4 27 L40 27 Z" fill="var(--accent)" opacity="0.08"/>
         <!-- Inner left ridge -->
-        <path d="M22 4 L12 27" stroke="rgba(255,255,255,0.3)" stroke-width="1" stroke-linecap="round"/>
+        <path d="M22 4 L12 27" stroke="var(--accent)" stroke-width="1" stroke-linecap="round" opacity="0.3"/>
         <!-- Door arch -->
-        <path d="M15 27 Q22 18 29 27" stroke="rgba(255,255,255,0.7)" stroke-width="1.4" stroke-linecap="round" fill="none"/>
+        <path d="M15 27 Q22 18 29 27" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.7"/>
         <!-- Peak dot -->
-        <circle cx="22" cy="4" r="1.5" fill="rgba(255,255,255,0.6)"/>
+        <circle cx="22" cy="4" r="1.5" fill="var(--accent)" opacity="0.8"/>
       </svg>
       <div style="display:flex;flex-direction:column;gap:1px">
         <span class="wordmark-text">BASECAMP</span>
-        <span id="desk-name" style="font-size:10px;color:rgba(255,255,255,0.35);letter-spacing:.06em;font-weight:500;text-transform:uppercase">Private Base</span>
+        <span id="desk-name" style="font-size:10px;color:var(--text3);letter-spacing:.06em;font-weight:500;text-transform:uppercase">Private Base</span>
       </div>
     </div>
   </div>
@@ -680,6 +681,11 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
   </div>
 
   <div class="header-right">
+    <button class="hdr-btn" onclick="toggleWallpaper()" title="Hintergrundbild">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="1" y="2" width="14" height="12" rx="2"/><circle cx="5.5" cy="6" r="1.2" fill="currentColor" stroke="none"/><path d="M1 11l4-4 3 3 2-2 4 4"/>
+      </svg>
+    </button>
     <button class="hdr-btn" onclick="toggleLib()" title="Karten verwalten">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
         <line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/>
@@ -692,6 +698,30 @@ input[type=checkbox]{ accent-color:var(--accent); width:13px; height:13px; flex-
     <div id="clock">00:00:00</div>
   </div>
 </header>
+
+<!-- Wallpaper Panel -->
+<div id="wp-panel" style="display:none;position:fixed;top:60px;right:16px;z-index:200;width:280px;background:rgba(255,255,255,0.85);backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);border:1px solid rgba(255,255,255,0.9);border-radius:16px;box-shadow:0 8px 40px rgba(0,0,0,0.12);padding:16px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <span style="font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--text2)">Hintergrund</span>
+    <button onclick="toggleWallpaper()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:18px;line-height:1">×</button>
+  </div>
+  <!-- URL input -->
+  <div style="display:flex;gap:6px;margin-bottom:12px">
+    <input id="wp-url" placeholder="Bild-URL eingeben…" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:8px;font-size:12px;background:rgba(255,255,255,0.7);color:var(--text);outline:none">
+    <button onclick="wpSetUrl()" style="padding:7px 10px;background:var(--accent);border:none;border-radius:8px;color:#fff;font-size:12px;font-weight:600;cursor:pointer">OK</button>
+  </div>
+  <!-- File upload -->
+  <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px dashed var(--border2);border-radius:8px;cursor:pointer;margin-bottom:12px;font-size:12px;color:var(--text2)">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" width="16" height="16"><path d="M8 2v8M5 5l3-3 3 3"/><path d="M2 12h12"/></svg>
+    Vom Gerät hochladen
+    <input type="file" accept="image/*" onchange="wpSetFile(this)" style="display:none">
+  </label>
+  <!-- Presets -->
+  <div style="font-size:11px;color:var(--text3);margin-bottom:6px;font-weight:600">PRESETS</div>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px" id="wp-presets"></div>
+  <!-- Remove -->
+  <button onclick="wpClear()" style="width:100%;padding:7px;background:rgba(0,0,0,0.05);border:1px solid var(--border);border-radius:8px;font-size:12px;color:var(--text2);cursor:pointer;font-family:inherit">Kein Hintergrund</button>
+</div>
 
 <div class="lib-panel" id="lib">
   <div class="lib-head">
@@ -1362,6 +1392,78 @@ function addMp3(){ const u=gv('mp3-u'),t=gv('mp3-t'); if(!u||!u.startsWith('http
 function delMp3(i){ const d=dd();if(mp3Idx===i){if(mp3Audio)mp3Audio.pause();mp3Audio=null;mp3Playing=false;mp3Idx=null;}else if(mp3Idx>i)mp3Idx--;d.mp3tracks.splice(i,1);sched();rfr('mp3'); }
 
 
+// ── WALLPAPER ─────────────────────────────
+const WP_PRESETS = [
+  { label:'Sonnenuntergang', css:'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)' },
+  { label:'Ozean',           css:'linear-gradient(135deg,#0ea5e9,#06b6d4,#10b981)' },
+  { label:'Wald',            css:'linear-gradient(135deg,#166534,#15803d,#4ade80)' },
+  { label:'Mitternacht',     css:'linear-gradient(135deg,#1e1b4b,#312e81,#4338ca)' },
+  { label:'Sahara',          css:'linear-gradient(135deg,#92400e,#d97706,#fbbf24)' },
+  { label:'Rose',            css:'linear-gradient(135deg,#9d174d,#ec4899,#f9a8d4)' },
+  { label:'Nordlicht',       css:'linear-gradient(135deg,#065f46,#0891b2,#6d28d9)' },
+  { label:'Lava',            css:'linear-gradient(135deg,#7f1d1d,#dc2626,#f97316)' },
+];
+
+function wpInit(){
+  const grid = document.getElementById('wp-presets');
+  if(grid) grid.innerHTML = WP_PRESETS.map((p,i)=>
+    `<div onclick="wpSetPreset(${i})" title="${p.label}" style="height:44px;border-radius:8px;background:${p.css};cursor:pointer;border:2px solid transparent;transition:border-color .15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='transparent'"></div>`
+  ).join('');
+  const saved = localStorage.getItem('bc_wp');
+  if(saved) wpApply(saved);
+}
+
+function wpApply(value){
+  const isImg = value.startsWith('http') || value.startsWith('data:');
+  if(isImg){
+    document.body.style.cssText += ';background-image:url("'+value+'") !important;background-size:cover !important;background-position:center !important;background-attachment:fixed !important';
+  } else {
+    document.body.style.backgroundImage = 'none';
+    document.body.style.background = value;
+  }
+  // Keep the radial overlay on top via ::before – nothing to do, CSS handles it
+}
+
+function wpSetPreset(i){
+  const css = WP_PRESETS[i].css;
+  localStorage.setItem('bc_wp', css);
+  wpApply(css);
+}
+
+function wpSetUrl(){
+  const url = document.getElementById('wp-url')?.value?.trim();
+  if(!url) return;
+  localStorage.setItem('bc_wp', url);
+  wpApply(url);
+  document.getElementById('wp-url').value = '';
+}
+
+function wpSetFile(input){
+  const file = input.files?.[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const data = e.target.result;
+    try { localStorage.setItem('bc_wp', data); } catch(err){}
+    wpApply(data);
+  };
+  reader.readAsDataURL(file);
+}
+
+function wpClear(){
+  localStorage.removeItem('bc_wp');
+  document.body.style.backgroundImage = '';
+  document.body.style.background = '';
+}
+
+function toggleWallpaper(){
+  const p = document.getElementById('wp-panel');
+  if(!p) return;
+  const open = p.style.display !== 'none';
+  p.style.display = open ? 'none' : 'block';
+  if(!open) wpInit();
+}
+
 function mkDrag(card){
   const head=card.querySelector('.card-head');
   let ox,oy,dragging=false;
@@ -1442,7 +1544,7 @@ tick();setInterval(tick,1000);
 // desk height
 setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.querySelectorAll('.card').forEach(c=>{m=Math.max(m,c.offsetTop+c.offsetHeight+40);});desk.style.minHeight=m+'px';},500);
 
-(async()=>{ await init(); })();
+(async()=>{ await init(); wpInit(); })();
 </script>
 </body>
 </html>
