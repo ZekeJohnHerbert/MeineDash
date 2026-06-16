@@ -1665,21 +1665,33 @@ async function bbGenerate(){
   btn.disabled = true;
   
   try {
+    const payload = { kundenmail: km, bestellung: best||'', anweisung: anw };
     const res = await fetch(BB_WORKER, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ kundenmail: km, bestellung: best, anweisung: anw })
+      body: JSON.stringify(payload)
     });
     
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    const text = await res.text();
+    console.log('Worker response:', res.status, text);
     
-    const data = await res.json();
+    if(!res.ok){
+      try {
+        const errData = JSON.parse(text);
+        throw new Error(errData.error || `HTTP ${res.status}: ${text}`);
+      } catch(e){
+        throw new Error(`HTTP ${res.status}: ${text}`);
+      }
+    }
+    
+    const data = JSON.parse(text);
     if(data.error) throw new Error(data.error);
     
-    document.getElementById('bb-antwort').value = data.antwort || 'Keine Antwort generiert';
+    document.getElementById('bb-antwort').value = data.antwort || data.response || 'Keine Antwort generiert';
     document.getElementById('bb-result').style.display = 'block';
   } catch(e){
-    bbShowError(e.message);
+    console.error('Error:', e);
+    bbShowError('❌ ' + e.message);
   } finally {
     btn.textContent = origText;
     btn.disabled = false;
