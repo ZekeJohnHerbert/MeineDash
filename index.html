@@ -1627,6 +1627,52 @@ function mlbReset(){ const d=dd(); d.mlbTeamId=null; mlbData=null; sched(); rfr(
 function mlbRefresh(){ mlbData=null; rfr('mlb'); }
 
 
+// ── BLUMENBUDDY CANNED RESPONSES ────────────────────────────
+const BB_SNIPPETS = [
+  ['Danke-Eingang', 'Vielen Dank für Ihre Nachricht! Wir melden uns schnellstmöglich bei Ihnen.'],
+  ['Weiterleitung', 'Wir haben Ihr Anliegen an die zuständige Abteilung weitergeleitet.'],
+  ['Reklamation', 'Ihr Paket ist leider beschädigt angekommen – das tut uns sehr leid. Bitte schicken Sie uns ein Foto, damit wir umgehend helfen können.'],
+  ['Prüfung läuft', 'Wir prüfen Ihre Bestellung und melden uns innerhalb von 24 Stunden.'],
+  ['Versand-Info', 'Ihr Paket ist unterwegs! Sie erhalten in Kürze eine Tracking-Nummer per E-Mail.'],
+  ['Artikel nicht verfügbar', 'Der gewünschte Artikel ist leider momentan nicht verfügbar. Wir benachrichtigen Sie, sobald er wieder im Lager ist.'],
+  ['Stornierung bestätigt', 'Ihre Stornierung wurde bearbeitet. Das Geld wird innerhalb von 3-5 Arbeitstagen auf Ihr Konto zurück überwiesen.'],
+  ['Austausch angeboten', 'Gerne schicken wir Ihnen einen Ersatz kostenlos zu. Der fehlerhafte Artikel kann in der Rücksendung mitgegeben werden.'],
+];
+
+function bbInitSnippets(){
+  const quick = document.getElementById('bb-quick-snippets');
+  quick.innerHTML = BB_SNIPPETS.slice(0, 4).map(([label, text]) => 
+    `<button onclick="bbSetAnweisung('${text.replace(/'/g, "\\'")}')" style="padding:8px 12px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;line-height:1.4" onmouseover="this.style.background='rgba(0,0,0,0.12)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">${label}</button>`
+  ).join('');
+  
+  bbRenderAllSnippets();
+}
+
+function bbRenderAllSnippets(){
+  const list = document.getElementById('bb-snippets-list');
+  list.innerHTML = BB_SNIPPETS.map(([label, text]) => 
+    `<div style="padding:12px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='var(--border2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='var(--border)'" onclick="bbSetAnweisung('${text.replace(/'/g, "\\'")}');document.getElementById('bb-snippets-modal').style.display='none'">
+      <div style="font-weight:600;color:var(--text);font-size:12px;margin-bottom:4px">${label}</div>
+      <div style="color:var(--text2);font-size:11px;line-height:1.4">${text}</div>
+    </div>`
+  ).join('');
+}
+
+function bbFilterSnippets(){
+  const search = document.getElementById('bb-snippets-search')?.value?.toLowerCase() || '';
+  const list = document.getElementById('bb-snippets-list');
+  const filtered = BB_SNIPPETS.filter(([label, text]) => 
+    label.toLowerCase().includes(search) || text.toLowerCase().includes(search)
+  );
+  
+  list.innerHTML = filtered.map(([label, text]) => 
+    `<div style="padding:12px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='var(--border2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='var(--border)'" onclick="bbSetAnweisung('${text.replace(/'/g, "\\'")}');document.getElementById('bb-snippets-modal').style.display='none'">
+      <div style="font-weight:600;color:var(--text);font-size:12px;margin-bottom:4px">${label}</div>
+      <div style="color:var(--text2);font-size:11px;line-height:1.4">${text}</div>
+    </div>`
+  ).join('');
+}
+
 // ── BLUMENBUDDY ────────────────────────────
 const BB_WORKER = 'https://blumenbuddy-proxy.zekeherbert.workers.dev/';
 
@@ -1642,6 +1688,7 @@ function bbOpenModal(){
   const modal = document.getElementById('bb-modal');
   const savedName = localStorage.getItem('bb-agentname');
   if(savedName) document.getElementById('bb-agentname').value = savedName;
+  bbInitSnippets();
   if(modal) modal.style.display='flex';
 }
 
@@ -1996,7 +2043,19 @@ setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.query
 
 (async()=>{ await init(); wpInit(); })();
 window.addEventListener('resize', ()=>{ renderDesk(); });
-</script><!-- BlumenBuddy Solution Modal -->
+</script><!-- BlumenBuddy Snippets Modal -->
+<div id="bb-snippets-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:20px">
+  <div style="background:rgba(255,255,255,0.85);backdrop-filter:blur(28px);border-radius:16px;padding:24px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;border:1px solid rgba(255,255,255,0.9);box-shadow:0 16px 60px rgba(0,0,0,.15)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div style="font-size:14px;font-weight:700;color:var(--text)">Textbausteine</div>
+      <button onclick="document.getElementById('bb-snippets-modal').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);padding:0">×</button>
+    </div>
+    <input id="bb-snippets-search" placeholder="Suchen..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;margin-bottom:16px;outline:none;font-size:12px" oninput="bbFilterSnippets()">
+    <div id="bb-snippets-list" style="display:flex;flex-direction:column;gap:8px"></div>
+  </div>
+</div>
+
+<!-- BlumenBuddy Modal -->
 <div id="bb-solution-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;backdrop-filter:blur(8px);align-items:center;justify-content:center">
   <div style="background:rgba(255,255,255,0.85);backdrop-filter:blur(28px);border-radius:16px;padding:24px;max-width:380px;border:1px solid rgba(255,255,255,0.9);box-shadow:0 16px 60px rgba(0,0,0,.15)">
     <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">Lösung / Anweisung wählen</div>
@@ -2029,12 +2088,12 @@ window.addEventListener('resize', ()=>{ renderDesk(); });
       <div style="max-width:900px;margin:0 auto;color:var(--text)">
         <!-- Textbausteine / Canned Responses -->
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Textbausteine</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <button onclick="bbSetAnweisung('Vielen Dank für Ihre Nachricht! Wir melden uns schnellstmöglich bei Ihnen.')" style="padding:10px 12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;background:rgba(0,0,0,0.04);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;line-height:1.4" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='rgba(0,0,0,0.1)'">Danke-Eingang</button>
-            <button onclick="bbSetAnweisung('Wir haben Ihr Anliegen an die zuständige Abteilung weitergeleitet.')" style="padding:10px 12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;background:rgba(0,0,0,0.04);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;line-height:1.4" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='rgba(0,0,0,0.1)'">Weiterleitung</button>
-            <button onclick="bbSetAnweisung('Ihr Paket ist leider beschädigt angekommen – das tut uns sehr leid. Bitte schicken Sie uns ein Foto, damit wir umgehend helfen können.')" style="padding:10px 12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;background:rgba(0,0,0,0.04);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;line-height:1.4" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='rgba(0,0,0,0.1)'">Reklamation</button>
-            <button onclick="bbSetAnweisung('Wir prüfen Ihre Bestellung und melden uns innerhalb von 24 Stunden.')" style="padding:10px 12px;border:2px solid rgba(0,0,0,0.1);border-radius:8px;background:rgba(0,0,0,0.04);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .2s;line-height:1.4" onmouseover="this.style.background='rgba(0,0,0,0.08)';this.style.borderColor='rgba(0,0,0,0.2)'" onmouseout="this.style.background='rgba(0,0,0,0.04)';this.style.borderColor='rgba(0,0,0,0.1)'">Prüfung läuft</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+            <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Textbausteine</div>
+            <button onclick="document.getElementById('bb-snippets-modal').style.display='flex'" style="padding:4px 10px;background:rgba(0,0,0,0.08);border:1px solid var(--border);border-radius:6px;color:var(--text2);font-size:10px;font-weight:600;cursor:pointer;font-family:inherit">📋 Alle anzeigen</button>
+          </div>
+          <div id="bb-quick-snippets" style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <!-- Quick access buttons will be injected here -->
           </div>
         </div>
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
