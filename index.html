@@ -1716,12 +1716,18 @@ async function bbGenerate(){
   
   try {
     const systemMsg = `Du bist ein Kundenservice-Agent für Bloomify (Online-Pflanzenshop).
-Schreibe eine höfliche, hilfreiche Antwort-Mail auf die Kundenanfrage.
 
-VORGABE: ${anw}
+WICHTIG:
+1. KEIN BETREFF - Starte die Mail direkt mit einer Anrede (Hey, Moin oder Hallo - je nach Ton)
+2. EMPATHIE: Beziehe dich auf POSITIVE Dinge aus der Kundenmail (z.B. ihre Freude, ihr Engagement, schöne Erlebnisse)
+3. LÖSUNG: Orientiere dich STRIKT an der Vorgabe - das ist deine primäre Handlung
+4. STIL: Kurz, natürlich, hilfreich - kein Marketing-Fluff, keine unnötigen Sätze
+5. FOKUS: Kundenbeschwerde/Problem zuerst lösen, dann auf Positives eingehen
+
+VORGABE (befolge diese strikt): ${anw}
 ${best ? 'BESTELLUNG: ' + best : ''}
 
-Schreibe nur die Mail, keine Erklärungen.`;
+Schreibe eine komplette Mail (Anrede + Text) - nur die Mail, keine Erklärungen oder Meta-Text.`;
 
     const payload = { 
       model: 'claude-sonnet-4-6',
@@ -1762,6 +1768,15 @@ function bbShowError(msg){
 function bbCopyAnswer(){
   const txt = document.getElementById('bb-antwort')?.value;
   if(txt) navigator.clipboard.writeText(txt).then(()=>{ alert('✓ Kopiert'); });
+}
+
+function bbClear(){
+  document.getElementById('bb-kundenmail').value = '';
+  document.getElementById('bb-bestellung').value = '';
+  document.getElementById('bb-anweisung').value = '';
+  document.getElementById('bb-analyse').style.display = 'none';
+  document.getElementById('bb-result').style.display = 'none';
+  bbShowError('');
 }
 
 
@@ -1970,6 +1985,9 @@ window.addEventListener('resize', ()=>{ renderDesk(); });
           <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Lösung / Anweisung</div>
           <textarea id="bb-anweisung" placeholder="Was soll die Antwort-Mail enthalten?" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:80px;resize:vertical;outline:none;font-size:12px"></textarea>
         </div>
+
+        <!-- Clear Button -->
+        <button onclick="bbClear()" style="width:100%;padding:10px;background:rgba(0,0,0,0.06);color:var(--text2);border:1px solid var(--border);border-radius:8px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:8px">🔄 Alles löschen</button>
 
         <!-- Generate Button -->
         <button onclick="bbGenerate()" style="width:100%;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px">✨ Antwort generieren</button>
