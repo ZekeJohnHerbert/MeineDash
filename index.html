@@ -1665,7 +1665,12 @@ async function bbGenerate(){
   btn.disabled = true;
   
   try {
-    const payload = { kundenmail: km, bestellung: best||'', anweisung: anw };
+    const payload = { 
+      model: 'claude-sonnet-4-6',
+      kundenmail: km, 
+      bestellung: best||'', 
+      anweisung: anw 
+    };
     const res = await fetch(BB_WORKER, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
