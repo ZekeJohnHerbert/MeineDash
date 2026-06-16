@@ -866,6 +866,7 @@ const ICONS = {
   pinboard:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M10 2l4 4-5.5 1L5 10.5 2 14M10 2L5 7 3.5 11.5"/><circle cx="12" cy="4" r="1" fill="currentColor" stroke="none"/></svg>`,
   mp3:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 10V6l4 2-4 2z" fill="currentColor" stroke="none"/></svg>`,
   mlb:`<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 8c0-2.2 1.8-4 4-4M8 12c2.2 0 4-1.8 4-4" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M6 5.5c.5 1 .5 4 0 5M10 5.5c-.5 1-.5 4 0 5" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`,
+  blumenbuddy:`<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v10H2z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 6h12M5 3v10M8 3v10M11 3v10" stroke="currentColor" stroke-width="1" opacity="0.5"/><circle cx="3.5" cy="4.5" r="1.2" fill="currentColor"/><circle cx="6.5" cy="4.5" r="1.2" fill="currentColor"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
   video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
   radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L10 2"/><circle cx="11.5" cy="11.5" r="1.5"/><line x1="4" y1="10" x2="4" y2="12"/><line x1="7" y1="10" x2="7" y2="13"/></svg>`,
@@ -893,6 +894,7 @@ const DEFS=[
   {id:'video',    name:'Video Player', desc:'YouTube & direkte URLs',  desks:['private','work']},
   {id:'radio',    name:'Internet Radio', desc:'Sender streamen',        desks:['private','work']},
   {id:'mlb',      name:'MLB',           desc:'Baseball Scores & Standings', desks:['private','work']},
+  {id:'blumenbuddy',name:'BlumenBuddy',    desc:'Kundenservice-Tool',          desks:['work']},
   {id:'mp3',      name:'MP3 Player',    desc:'Cloud-Dateien abspielen',  desks:['private','work']},
 ];
 
@@ -901,7 +903,7 @@ const LS_DATA='zeOS_v1',LS_TOK='zeOS_tok',LS_GID='zeOS_gid';
 const GFNAME='zeke-os.json';
 
 function defCards(desk){
-  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video','radio','mp3']};
+  const m={private:['weather','calendar','shopping','watchlist','links','countdown','gaming','music','notes','calc','pinboard'],work:['weather','calendar','links','notes','calc','bloomify','video','radio','mp3','blumenbuddy']};
   const o={}; m[desk].forEach(id=>o[id]=true); return o;
 }
 function defPos(id,desk){
@@ -1065,7 +1067,7 @@ function cFooter(id){
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3,mlb:rMlb})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3,mlb:rMlb,blumenbuddy:rBlumenBuddy})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -1625,7 +1627,81 @@ function mlbReset(){ const d=dd(); d.mlbTeamId=null; mlbData=null; sched(); rfr(
 function mlbRefresh(){ mlbData=null; rfr('mlb'); }
 
 
-// ── WALLPAPER ─────────────────────────────
+// ── BLUMENBUDDY ────────────────────────────
+const BB_WORKER = 'https://blumenbuddy-proxy.zekeherbert.workers.dev/';
+
+function rBlumenBuddy(cb){
+  cb.innerHTML=`<div style="text-align:center;padding:20px;color:var(--text3)">
+    <div style="font-size:20px;margin-bottom:8px">🌱</div>
+    <div style="font-size:13px;font-weight:600">BlumenBuddy</div>
+    <div style="font-size:11px;margin-top:4px">Klick zum öffnen</div>
+  </div>`;
+  cb.querySelector('.card-head').onclick=(e)=>{
+    if(e.target.tagName==='BUTTON'||e.target.className.includes('close')) return;
+    bbOpenModal();
+  };
+}
+
+function bbOpenModal(){
+  const modal = document.getElementById('bb-modal');
+  if(modal) modal.style.display='flex';
+}
+
+function bbCloseModal(){
+  const modal = document.getElementById('bb-modal');
+  if(modal) modal.style.display='none';
+}
+
+function bbSetAnweisung(val){ document.getElementById('bb-anweisung').value=val; }
+
+async function bbGenerate(){
+  const km = document.getElementById('bb-kundenmail')?.value?.trim();
+  const best = document.getElementById('bb-bestellung')?.value?.trim();
+  const anw = document.getElementById('bb-anweisung')?.value?.trim();
+  
+  if(!km){ bbShowError('Kundenanfrage erforderlich'); return; }
+  if(!anw){ bbShowError('Lösung/Anweisung erforderlich'); return; }
+  
+  bbShowError('');
+  const btn = event.target;
+  const origText = btn.textContent;
+  btn.textContent = '⏳ Lädt...';
+  btn.disabled = true;
+  
+  try {
+    const res = await fetch(BB_WORKER, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kundenmail: km, bestellung: best, anweisung: anw })
+    });
+    
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    
+    const data = await res.json();
+    if(data.error) throw new Error(data.error);
+    
+    document.getElementById('bb-antwort').value = data.antwort || 'Keine Antwort generiert';
+    document.getElementById('bb-result').style.display = 'block';
+  } catch(e){
+    bbShowError(e.message);
+  } finally {
+    btn.textContent = origText;
+    btn.disabled = false;
+  }
+}
+
+function bbShowError(msg){
+  const err = document.getElementById('bb-error');
+  if(msg){ err.textContent = msg; err.style.display = 'block'; }
+  else err.style.display = 'none';
+}
+
+function bbCopyAnswer(){
+  const txt = document.getElementById('bb-antwort')?.value;
+  if(txt) navigator.clipboard.writeText(txt).then(()=>{ alert('✓ Kopiert'); });
+}
+
+
 const WP_PRESETS = [
   { label:'Sonnenuntergang', css:'linear-gradient(135deg,#f97316,#ec4899,#8b5cf6)' },
   { label:'Ozean',           css:'linear-gradient(135deg,#0ea5e9,#06b6d4,#10b981)' },
@@ -1779,6 +1855,64 @@ setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.query
 
 (async()=>{ await init(); wpInit(); })();
 window.addEventListener('resize', ()=>{ renderDesk(); });
-</script>
+</script><!-- BlumenBuddy Modal -->
+<div id="bb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;backdrop-filter:blur(8px)" onclick="if(event.target.id==='bb-modal')bbCloseModal()">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;margin:0">
+    <!-- Header -->
+    <div style="background:rgba(255,255,255,0.75);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,0.9);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">🌱</span>
+        <span style="font-weight:700;font-size:14px;color:var(--text)">BlumenBuddy</span>
+      </div>
+      <button onclick="bbCloseModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);padding:0 4px">×</button>
+    </div>
+    
+    <!-- Content -->
+    <div id="bb-content" style="flex:1;overflow-y:auto;padding:16px;background:var(--bg)">
+      <div style="max-width:900px;margin:0 auto;color:var(--text)">
+        <!-- Kundenanfrage -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Kundenanfrage</div>
+          <textarea id="bb-kundenmail" placeholder="Kunden-E-Mail hier einfügen..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:100px;resize:vertical;outline:none;font-size:12px"></textarea>
+        </div>
+
+        <!-- Bestelldetails -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Bestelldetails <span style="font-weight:400;color:var(--text2)">(optional)</span></div>
+          <textarea id="bb-bestellung" placeholder="z.B. 2x Tomate Babo, 1x Erdbeere Enno..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:50px;resize:vertical;outline:none;font-size:12px"></textarea>
+        </div>
+
+        <!-- Schnell-Buttons -->
+        <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px">
+          <button onclick="bbSetAnweisung('Neuversand')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Neuversand</button>
+          <button onclick="bbSetAnweisung('Neuversand + Pflegetipps')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Neuversand + Tipps</button>
+          <button onclick="bbSetAnweisung('Wahl: Neuversand oder Gutschein')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Wahl</button>
+          <button onclick="bbSetAnweisung('Erstattung')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Erstattung</button>
+          <button onclick="bbSetAnweisung('Foto anfordern')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Foto</button>
+        </div>
+
+        <!-- Anweisung -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Lösung / Anweisung</div>
+          <textarea id="bb-anweisung" placeholder="Was soll die Antwort-Mail enthalten?" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:80px;resize:vertical;outline:none;font-size:12px"></textarea>
+        </div>
+
+        <!-- Generate Button -->
+        <button onclick="bbGenerate()" style="width:100%;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit;margin-bottom:12px">✨ Antwort generieren</button>
+
+        <!-- Error -->
+        <div id="bb-error" style="display:none;padding:10px;background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.25);border-radius:8px;color:#dc2626;font-size:12px;margin-bottom:12px"></div>
+
+        <!-- Result -->
+        <div id="bb-result" style="display:none;background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Entwurf</div>
+          <textarea id="bb-antwort" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.5);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:120px;font-size:11px;line-height:1.6"></textarea>
+          <button onclick="bbCopyAnswer()" style="margin-top:8px;padding:8px 14px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">📋 Kopieren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
