@@ -867,6 +867,7 @@ const ICONS = {
   mp3:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="12" height="12" rx="2"/><path d="M6 10V6l4 2-4 2z" fill="currentColor" stroke="none"/></svg>`,
   mlb:`<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 8c0-2.2 1.8-4 4-4M8 12c2.2 0 4-1.8 4-4" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/><path d="M6 5.5c.5 1 .5 4 0 5M10 5.5c-.5 1-.5 4 0 5" stroke="currentColor" stroke-width="1" fill="none" stroke-linecap="round"/></svg>`,
   blumenbuddy:`<svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h12v10H2z" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/><path d="M2 6h12M5 3v10M8 3v10M11 3v10" stroke="currentColor" stroke-width="1" opacity="0.5"/><circle cx="3.5" cy="4.5" r="1.2" fill="currentColor"/><circle cx="6.5" cy="4.5" r="1.2" fill="currentColor"/></svg>`,
+  zeiterfassung:`<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="7" fill="none" stroke="currentColor" stroke-width="1.2"/><path d="M8 4v4l3 2" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>`,
   bloomify:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2"/><path d="M8 2a3 3 0 010 6M8 8a3 3 0 010 6M2 8a3 3 0 016 0M8 8a3 3 0 016 0"/></svg>`,
   video:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="10" height="10" rx="2"/><path d="M11 6l4-2v8l-4-2V6z"/></svg>`,
   radio:`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="1" y="7" width="14" height="8" rx="2"/><path d="M4 7L10 2"/><circle cx="11.5" cy="11.5" r="1.5"/><line x1="4" y1="10" x2="4" y2="12"/><line x1="7" y1="10" x2="7" y2="13"/></svg>`,
@@ -895,6 +896,7 @@ const DEFS=[
   {id:'radio',    name:'Internet Radio', desc:'Sender streamen',        desks:['private','work']},
   {id:'mlb',      name:'MLB',           desc:'Baseball Scores & Standings', desks:['private','work']},
   {id:'blumenbuddy',name:'BlumenBuddy',    desc:'Kundenservice-Tool',          desks:['work']},
+  {id:'zeiterfassung',name:'Zeiterfassung', desc:'Zeit-Tracker für Aufgaben',   desks:['work']},
   {id:'mp3',      name:'MP3 Player',    desc:'Cloud-Dateien abspielen',  desks:['private','work']},
 ];
 
@@ -1067,7 +1069,7 @@ function cFooter(id){
   return a[id]||'';
 }
 
-function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3,mlb:rMlb,blumenbuddy:rBlumenBuddy})[id]?.(cb);}
+function rContent(id,el){const cb=el.querySelector(`#cb-${id}`);if(!cb)return;({weather:rWeather,calendar:rCal,shopping:rShop,watchlist:rWatch,links:rLinks,countdown:rCd,gaming:rGaming,music:rMusic,notes:rNotes,calc:rCalc,pinboard:rPins,bloomify:rBloomify,video:rVideo,radio:rRadio,mp3:rMp3,mlb:rMlb,blumenbuddy:rBlumenBuddy,zeiterfassung:rZeiterfassung})[id]?.(cb);}
 
 function dd(){return D[cur].data;}
 function rfr(id){const el=document.querySelector(`.card[data-id="${id}"]`);if(el)rContent(id,el);}
@@ -1829,6 +1831,226 @@ function bbCopyAnswer(){
   if(txt) navigator.clipboard.writeText(txt).then(()=>{ alert('✓ Kopiert'); });
 }
 
+
+// ── ZEITERFASSUNG ────────────────────────
+const ZE_PROJECTS = [
+  { name: 'Mails', color: '#378ADD' },
+  { name: 'Facebook', color: '#5b7fcb' },
+  { name: 'Instagram', color: '#E57CD8' },
+  { name: 'JTL', color: '#1D9E75' },
+  { name: 'Rechnungen', color: '#EF9F27' },
+];
+
+let zeRunning = false;
+let zeStartTime = null;
+let zeInterval = null;
+let zeEntries = [];
+let zeSelectedProject = ZE_PROJECTS[0];
+
+function rZeiterfassung(cb){
+  cb.innerHTML=`<div onclick="zeOpenModal()" style="text-align:center;padding:20px;color:var(--text3);cursor:pointer;border-radius:8px;transition:all .2s" onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='transparent'">
+    <div style="font-size:24px;margin-bottom:8px">⏱</div>
+    <div style="font-size:13px;font-weight:600;color:var(--text)">Zeiterfassung</div>
+    <div style="font-size:11px;margin-top:4px">Klick zum öffnen</div>
+  </div>`;
+}
+
+function zeOpenModal(){
+  zeInitModal();
+  document.getElementById('ze-modal').style.display='flex';
+}
+
+function zeCloseModal(){
+  document.getElementById('ze-modal').style.display='none';
+}
+
+function zeInitModal(){
+  zeEntries = JSON.parse(localStorage.getItem('ze-entries') || '[]');
+  
+  // Init project select
+  const projSelect = document.getElementById('ze-project');
+  projSelect.innerHTML = ZE_PROJECTS.map(p => `<option value="${p.name}" style="background:${p.color}">${p.name}</option>`).join('');
+  projSelect.value = zeSelectedProject.name;
+  
+  zeRenderEntries();
+}
+
+function zeToggleTimer(){
+  const task = document.getElementById('ze-task-input')?.value?.trim();
+  if(!task && !zeRunning) return alert('Aufgabe erforderlich');
+  
+  if(zeRunning){
+    zeStopTimer();
+  } else {
+    zeStartTimer(task);
+  }
+}
+
+function zeStartTimer(task){
+  zeRunning = true;
+  zeStartTime = Date.now();
+  document.getElementById('ze-btn').textContent = '⏸ Stop';
+  document.getElementById('ze-current').textContent = `${task} · ${zeSelectedProject.name}`;
+  
+  zeInterval = setInterval(()=>{
+    const elapsed = Math.floor((Date.now() - zeStartTime) / 1000);
+    const h = Math.floor(elapsed / 3600);
+    const m = Math.floor((elapsed % 3600) / 60);
+    const s = elapsed % 60;
+    document.getElementById('ze-timer').textContent = h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }, 100);
+}
+
+function zeStopTimer(){
+  clearInterval(zeInterval);
+  zeRunning = false;
+  
+  const task = document.getElementById('ze-task-input').value.trim();
+  const elapsed = Math.floor((Date.now() - zeStartTime) / 1000);
+  const now = new Date();
+  
+  zeEntries.push({
+    date: now.toLocaleDateString('de-DE'),
+    time: String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0'),
+    task: task,
+    project: zeSelectedProject.name,
+    duration: elapsed,
+    color: zeSelectedProject.color
+  });
+  
+  localStorage.setItem('ze-entries', JSON.stringify(zeEntries));
+  document.getElementById('ze-task-input').value = '';
+  document.getElementById('ze-btn').textContent = '▶ Start';
+  document.getElementById('ze-current').textContent = '';
+  document.getElementById('ze-timer').textContent = '0:00:00';
+  
+  zeRenderEntries();
+}
+
+function zeRenderEntries(){
+  const list = document.getElementById('ze-entries');
+  if(!zeEntries.length){
+    list.innerHTML = '<div style="text-align:center;color:var(--text3);font-size:12px;padding:20px">Keine Einträge noch</div>';
+    return;
+  }
+  
+  list.innerHTML = zeEntries.slice().reverse().map(e => {
+    const h = Math.floor(e.duration / 3600);
+    const m = Math.floor((e.duration % 3600) / 60);
+    const s = e.duration % 60;
+    const durStr = h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-left:3px solid ${e.color};border-radius:8px;font-size:11px">
+      <div>
+        <div style="font-weight:600;color:var(--text)">${e.task}</div>
+        <div style="color:var(--text2);font-size:10px">${e.project} · ${e.date} ${e.time}</div>
+      </div>
+      <div style="font-family:monospace;font-weight:600;color:var(--text);text-align:right">${durStr}</div>
+    </div>`;
+  }).join('');
+}
+
+function zeExportCSV(){
+  if(!zeEntries.length) return alert('Keine Einträge');
+  
+  let csv = 'Datum,Uhrzeit,Aufgabe,Projekt,Dauer\n';
+  zeEntries.forEach(e => {
+    const h = Math.floor(e.duration / 3600);
+    const m = Math.floor((e.duration % 3600) / 60);
+    const s = e.duration % 60;
+    const durStr = h + ':' + String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+    csv += `${e.date},${e.time},"${e.task}",${e.project},${durStr}\n`;
+  });
+  
+  const blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'zeiterfassung_' + new Date().toISOString().split('T')[0] + '.csv';
+  link.click();
+}
+
+
+
+// ── ZEITERFASSUNG ─────────────────────────
+function rZeiterfassung(cb){
+  cb.innerHTML=`
+    <div style="padding:16px;min-height:120px;display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;gap:8px">
+        <input id="ze-task" placeholder="Aufgabe eingeben..." style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;outline:none;font-size:12px">
+        <button onclick="zeStart()" id="ze-btn" style="padding:8px 14px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">▶ Start</button>
+      </div>
+      <div id="ze-display" style="text-align:center;font-family:monospace;font-size:28px;font-weight:700;color:var(--text);letter-spacing:2px">00:00:00</div>
+      <div id="ze-list" style="display:flex;flex-direction:column;gap:6px;max-height:200px;overflow-y:auto"></div>
+    </div>`;
+  
+  zeInit();
+}
+
+let zeTimer = null, zeSeconds = 0, zeTasks = [];
+
+function zeInit(){
+  zeTasks = JSON.parse(localStorage.getItem('ze-tasks') || '[]');
+  zeRender();
+}
+
+function zeStart(){
+  const task = document.getElementById('ze-task')?.value?.trim();
+  if(!task) return;
+  
+  if(zeTimer){
+    zeStop();
+  } else {
+    zeTasks.push({task, start: Date.now(), duration: 0});
+    localStorage.setItem('ze-tasks', JSON.stringify(zeTasks));
+    zeSeconds = 0;
+    document.getElementById('ze-task').value = '';
+    zeStartTimer();
+    zeRender();
+  }
+}
+
+function zeStartTimer(){
+  if(zeTimer) return;
+  zeTimer = setInterval(()=>{
+    zeSeconds++;
+    const h = Math.floor(zeSeconds / 3600).toString().padStart(2, '0');
+    const m = Math.floor((zeSeconds % 3600) / 60).toString().padStart(2, '0');
+    const s = (zeSeconds % 60).toString().padStart(2, '0');
+    document.getElementById('ze-display').textContent = h + ':' + m + ':' + s;
+  }, 1000);
+}
+
+function zeStop(){
+  clearInterval(zeTimer);
+  zeTimer = null;
+  if(zeTasks.length > 0){
+    zeTasks[zeTasks.length-1].duration = zeSeconds;
+    localStorage.setItem('ze-tasks', JSON.stringify(zeTasks));
+    zeSeconds = 0;
+    document.getElementById('ze-display').textContent = '00:00:00';
+    zeRender();
+  }
+  document.getElementById('ze-btn').textContent = '▶ Start';
+}
+
+function zeRender(){
+  const list = document.getElementById('ze-list');
+  const btn = document.getElementById('ze-btn');
+  
+  if(zeTimer) btn.textContent = '⏸ Stop';
+  
+  list.innerHTML = zeTasks.slice(-5).reverse().map((t, i) => {
+    const h = Math.floor(t.duration / 3600).toString().padStart(2, '0');
+    const m = Math.floor((t.duration % 3600) / 60).toString().padStart(2, '0');
+    const s = (t.duration % 60).toString().padStart(2, '0');
+    const time = h + ':' + m + ':' + s;
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(0,0,0,0.04);border:1px solid var(--border);border-radius:6px;font-size:11px">
+      <span style="color:var(--text2)">${t.task}</span>
+      <span style="font-family:monospace;font-weight:600;color:var(--text);">${time}</span>
+    </div>`;
+  }).join('');
+}
+
 function bbClear(){
   document.getElementById('bb-thread').value = '';
   document.getElementById('bb-bestellung').value = '';
@@ -2160,6 +2382,53 @@ Handelsregister: HRB 216252, Amtsgericht Oldenburg</textarea>
           <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Entwurf</div>
           <textarea id="bb-antwort" readonly style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.5);color:var(--text);font-family:'JetBrains Mono',monospace;min-height:120px;font-size:11px;line-height:1.6"></textarea>
           <button onclick="bbCopyAnswer()" style="margin-top:8px;padding:8px 14px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">📋 Kopieren</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Zeiterfassung Modal -->
+<div id="ze-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;backdrop-filter:blur(8px)" onclick="if(event.target.id==='ze-modal')zeCloseModal()">
+  <div style="position:absolute;inset:0;display:flex;flex-direction:column;margin:0">
+    <!-- Header -->
+    <div style="background:rgba(255,255,255,0.75);backdrop-filter:blur(28px);border-bottom:1px solid rgba(255,255,255,0.9);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">⏱</span>
+        <span style="font-weight:700;font-size:14px;color:var(--text)">Zeiterfassung</span>
+      </div>
+      <button onclick="zeCloseModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);padding:0 4px">×</button>
+    </div>
+    
+    <!-- Content -->
+    <div id="ze-content" style="flex:1;overflow-y:auto;padding:16px;background:var(--bg)">
+      <div style="max-width:900px;margin:0 auto">
+        <!-- Input Section -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="display:flex;gap:8px;margin-bottom:12px">
+            <div style="flex:1">
+              <input id="ze-task-input" placeholder="Aufgabe eingeben..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;outline:none;font-size:12px">
+            </div>
+            <select id="ze-project" style="padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;outline:none;font-size:12px">
+            </select>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button onclick="zeToggleTimer()" id="ze-btn" style="flex:1;padding:12px;background:#1a1a2e;color:#fff;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;font-family:inherit">▶ Start</button>
+            <button onclick="zeExportCSV()" style="padding:12px 14px;background:rgba(0,0,0,0.08);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-weight:600;font-size:12px;cursor:pointer;font-family:inherit">📥 CSV</button>
+          </div>
+        </div>
+
+        <!-- Timer Display -->
+        <div style="text-align:center;padding:20px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;margin-bottom:12px">
+          <div style="font-family:monospace;font-size:48px;font-weight:700;color:var(--text);letter-spacing:4px;margin-bottom:8px" id="ze-timer">0:00:00</div>
+          <div style="color:var(--text2);font-size:12px" id="ze-current"></div>
+        </div>
+
+        <!-- Entries List -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px">Einträge</div>
+          <div id="ze-entries" style="display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div>
         </div>
       </div>
     </div>
