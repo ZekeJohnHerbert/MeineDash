@@ -1640,7 +1640,14 @@ function rBlumenBuddy(cb){
 
 function bbOpenModal(){
   const modal = document.getElementById('bb-modal');
+  const savedName = localStorage.getItem('bb-agentname');
+  if(savedName) document.getElementById('bb-agentname').value = savedName;
   if(modal) modal.style.display='flex';
+}
+
+function bbSaveName(){
+  const name = document.getElementById('bb-agentname')?.value?.trim();
+  if(name) localStorage.setItem('bb-agentname', name);
 }
 
 function bbCloseModal(){
@@ -1651,8 +1658,8 @@ function bbCloseModal(){
 function bbSetAnweisung(val){ document.getElementById('bb-anweisung').value=val; }
 
 async function bbAnalyze(){
-  const km = document.getElementById('bb-kundenmail')?.value?.trim();
-  if(!km){ bbShowError('Kundenanfrage erforderlich'); return; }
+  const thread = document.getElementById('bb-thread')?.value?.trim();
+  if(!thread){ bbShowError('Email-Thread erforderlich'); return; }
   
   bbShowError('');
   const btn = event.target;
@@ -1664,8 +1671,8 @@ async function bbAnalyze(){
     const payload = { 
       model: 'claude-sonnet-4-6',
       max_tokens: 500,
-      system: 'Du bist ein Kundenservice-Analyst für Bloomify. Extrahiere aus der Anfrage: Kundennamen, Hauptproblem, Produkt(e), Dringlichkeit. Antworte als JSON: {"kunde":"...","problem":"...","produkt":"...","urgency":"normal|hoch|kritisch"}',
-      messages: [{ role: 'user', content: km }]
+      system: 'Du bist ein Kundenservice-Analyst für Bloomify. Analysiere den letzten Teil des Email-Threads (letzte Nachricht). Extrahiere: Kundennamen, Hauptproblem/Anfrage, erwähnte Produkte, Dringlichkeit. Antworte als JSON: {"kunde":"...","problem":"...","produkt":"...","urgency":"normal|hoch|kritisch"}',
+      messages: [{ role: 'user', content: `Analysiere den Email-Thread (letzte Nachricht ist die Anfrage):\n\n${thread}` }]
     };
     
     const res = await fetch(BB_WORKER, {
@@ -1701,13 +1708,13 @@ async function bbAnalyze(){
 }
 
 async function bbGenerate(){
-  const km = document.getElementById('bb-kundenmail')?.value?.trim();
   const thread = document.getElementById('bb-thread')?.value?.trim();
   const best = document.getElementById('bb-bestellung')?.value?.trim();
   const anw = document.getElementById('bb-anweisung')?.value?.trim();
   const agentName = document.getElementById('bb-agentname')?.value?.trim();
+  const signature = document.getElementById('bb-signature')?.value?.trim();
   
-  if(!km){ bbShowError('Kundenanfrage (neueste Mail) erforderlich'); return; }
+  if(!thread){ bbShowError('Email-Thread erforderlich'); return; }
   if(!agentName){ bbShowError('Dein Name erforderlich für die Signatur'); return; }
   if(!anw){ bbShowSolutionModal(); return; }
   
@@ -1719,33 +1726,34 @@ async function bbGenerate(){
   
   try {
     const systemMsg = `Du bist ein Kundenservice-Agent für Bloomify (Online-Pflanzenshop).
-DEIN NAME FÜR DIE SIGNATUR: ${agentName}
 
-${thread ? `KONTEXT (ganzer Email-Thread zum Verständnis):
+DEIN NAME: ${agentName}
+
+GANZER EMAIL-THREAD (chronologisch, neueste Nachricht am Ende):
 ${thread}
 
-` : ''}NEUESTE KUNDENMAIL (auf diese antworten):
-${km}
+ANWEISUNGEN:
+1. FORMAT: Antworte auf die LETZTE NACHRICHT im Thread. Beginne mit "Hey", "Moin" oder "Hallo" - KEIN Betreff, keine Anrede wie "Sehr geehrte"
+2. KONTEXT: Nutze den ganzen Thread um zu verstehen was schon passiert ist, was versprochen wurde, welche Probleme offen sind
+3. LÖSUNG: Umsetz EXAKT diese Vorgabe: ${anw}
+4. TONALITÄT: Kurz, direkt, hilfreich. Kein Fluff, kein Marketing. Sei menschlich und freundlich.
+5. EMPATHIE: Beziehe dich kurz positiv auf etwas aus dem Thread oder der letzten Nachricht
+6. TECHNISCH: KEINE Gedankenstriche (—) verwenden. Nutze stattdessen: Kommata, Klammern, oder schreibe anders
+7. SIGNATUR: Endet EXAKT so:
+Viele Grüße
+${agentName}
 
-WICHTIG - REGELN EINHALTEN:
-1. SIGNATUR: Schreibe immer "Viele Grüße, ${agentName}" - NIEMALS andere Namen
-2. KEIN BETREFF - Starte die Mail direkt mit einer Anrede (Hey, Moin oder Hallo - je nach Ton)
-3. KEINE GEDANKENSTRICHE - Verwende normale Bindestriche oder Kommata statt —
-4. KONTEXT NUTZEN: Beachte den ganzen Thread - offene Punkte, frühere Zusagen, was noch nicht gelöst ist
-5. EMPATHIE: Beziehe dich auf POSITIVE Dinge aus der Kundenmail
-6. LÖSUNG: Orientiere dich STRIKT an der Vorgabe - das ist deine primäre Handlung
-7. STIL: Kurz, natürlich, hilfreich - kein Marketing-Fluff, keine unnötigen Sätze
+${signature}
 
-VORGABE (befolge diese strikt): ${anw}
-${best ? 'BESTELLUNG: ' + best : ''}
+${best ? `\nBESTELLUNGS-INFO: ${best}` : ''}
 
-Schreibe eine komplette Mail (Anrede + Text + Signatur mit ${agentName}) - nur die Mail, keine Erklärungen oder Meta-Text.`;
+Schreibe jetzt die Mail-Antwort - nichts anderes, keine Erklärungen.`;
 
     const payload = { 
       model: 'claude-sonnet-4-6',
       max_tokens: 800,
       system: systemMsg,
-      messages: [{ role: 'user', content: km }]
+      messages: [{ role: 'user', content: 'Schreibe die Antwort-Mail.' }]
     };
     
     const res = await fetch(BB_WORKER, {
@@ -1783,7 +1791,6 @@ function bbCopyAnswer(){
 }
 
 function bbClear(){
-  document.getElementById('bb-kundenmail').value = '';
   document.getElementById('bb-thread').value = '';
   document.getElementById('bb-bestellung').value = '';
   document.getElementById('bb-anweisung').value = '';
@@ -1987,22 +1994,26 @@ window.addEventListener('resize', ()=>{ renderDesk(); });
     <!-- Content -->
     <div id="bb-content" style="flex:1;overflow-y:auto;padding:16px;background:var(--bg)">
       <div style="max-width:900px;margin:0 auto;color:var(--text)">
-        <!-- Kundenanfrage -->
+        <!-- Email Thread -->
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Neueste Kundenmail</div>
-          <textarea id="bb-kundenmail" placeholder="Nur die aktuelle Mail vom Kunden..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:80px;resize:vertical;outline:none;font-size:12px"></textarea>
-        </div>
-
-        <!-- Thread Context -->
-        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Thread / Kontext <span style="font-weight:400;color:var(--text2)">(ganzer Email-Verlauf)</span></div>
-          <textarea id="bb-thread" placeholder="Ganzer Email-Thread zum Verständnis..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:120px;resize:vertical;outline:none;font-size:12px"></textarea>
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Email-Thread (chronologisch)</div>
+          <textarea id="bb-thread" placeholder="Ganzer Email-Thread - neueste Mail ganz unten..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:150px;resize:vertical;outline:none;font-size:12px"></textarea>
+          <div style="font-size:10px;color:var(--text3);margin-top:6px">💡 Tipp: Paste den ganzen Thread hier rein. Die KI nutzt alles für Kontext und antwortet auf die letzte Nachricht.</div>
         </div>
 
         <!-- Bestelldetails -->
         <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
           <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Dein Name (für Signatur)</div>
-          <input id="bb-agentname" placeholder="z.B. John, Iskra, Nico..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;outline:none;font-size:12px">
+          <input id="bb-agentname" placeholder="z.B. John, Iskra, Nico..." style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;outline:none;font-size:12px" oninput="bbSaveName()">
+        </div>
+
+        <!-- Signature Footer -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Signatur / Adresse (für Ende der Mail)</div>
+          <textarea id="bb-signature" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.7);color:var(--text);font-family:inherit;min-height:80px;resize:vertical;outline:none;font-size:11px">Bloomify GmbH
+Am Mühlenhof 7, D-26655 Westerstede
+Geschäftsführer: Daniel Schnadt, Dirk Ostendorf
+Handelsregister: HRB 216252, Amtsgericht Oldenburg</textarea>
         </div>
 
         <!-- Bestelldetails -->
@@ -2023,12 +2034,18 @@ window.addEventListener('resize', ()=>{ renderDesk(); });
             <div><span style="color:var(--text3);font-size:10px;font-weight:700">DRINGLICHKEIT</span><div id="bb-analyse-urgency" style="margin-top:4px"></div></div>
           </div>
         </div>
-        <div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:6px">
-          <button onclick="bbSetAnweisung('Neuversand')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Neuversand</button>
-          <button onclick="bbSetAnweisung('Neuversand + Pflegetipps')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Neuversand + Tipps</button>
-          <button onclick="bbSetAnweisung('Wahl: Neuversand oder Gutschein')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Wahl</button>
-          <button onclick="bbSetAnweisung('Erstattung')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Erstattung</button>
-          <button onclick="bbSetAnweisung('Foto anfordern')" style="padding:6px 12px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,0.6);color:var(--text2);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,0.9)'" onmouseout="this.style.background='rgba(255,255,255,0.6)'">Foto</button>
+
+        <!-- Quick Solutions -->
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Schnell-Lösungen</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button onclick="bbSetAnweisung('Neuversand')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Neuversand</button>
+            <button onclick="bbSetAnweisung('Neuversand + Pflegetipps')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Neuversand + Tipps</button>
+            <button onclick="bbSetAnweisung('Wahl: Neuversand oder Gutschein')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Wahl</button>
+            <button onclick="bbSetAnweisung('Erstattung')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Erstattung</button>
+            <button onclick="bbSetAnweisung('Foto anfordern')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Foto</button>
+            <button onclick="bbSetAnweisung('Sieht gut aus')" style="padding:8px 14px;border:1px solid var(--border2);border-radius:8px;background:rgba(0,0,0,0.08);color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s" onmouseover="this.style.background='rgba(26,26,46,0.12)';this.style.borderColor='var(--border)'" onmouseout="this.style.background='rgba(0,0,0,0.08)'">Sieht gut aus</button>
+          </div>
         </div>
 
         <!-- Anweisung -->
