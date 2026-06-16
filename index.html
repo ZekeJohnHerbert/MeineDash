@@ -1706,7 +1706,7 @@ async function bbGenerate(){
   const anw = document.getElementById('bb-anweisung')?.value?.trim();
   
   if(!km){ bbShowError('Kundenanfrage erforderlich'); return; }
-  if(!anw){ bbShowError('Lösung/Anweisung erforderlich'); return; }
+  if(!anw){ bbShowSolutionModal(); return; }
   
   bbShowError('');
   const btn = event.target;
@@ -1717,12 +1717,13 @@ async function bbGenerate(){
   try {
     const systemMsg = `Du bist ein Kundenservice-Agent für Bloomify (Online-Pflanzenshop).
 
-WICHTIG:
+WICHTIG - REGELN EINHALTEN:
 1. KEIN BETREFF - Starte die Mail direkt mit einer Anrede (Hey, Moin oder Hallo - je nach Ton)
-2. EMPATHIE: Beziehe dich auf POSITIVE Dinge aus der Kundenmail (z.B. ihre Freude, ihr Engagement, schöne Erlebnisse)
-3. LÖSUNG: Orientiere dich STRIKT an der Vorgabe - das ist deine primäre Handlung
-4. STIL: Kurz, natürlich, hilfreich - kein Marketing-Fluff, keine unnötigen Sätze
-5. FOKUS: Kundenbeschwerde/Problem zuerst lösen, dann auf Positives eingehen
+2. KEINE GEDANKENSTRICHE - Verwende normale Bindestriche oder Kommata statt —
+3. EMPATHIE: Beziehe dich auf POSITIVE Dinge aus der Kundenmail (z.B. ihre Freude, ihr Engagement, schöne Erlebnisse)
+4. LÖSUNG: Orientiere dich STRIKT an der Vorgabe - das ist deine primäre Handlung
+5. STIL: Kurz, natürlich, hilfreich - kein Marketing-Fluff, keine unnötigen Sätze
+6. FOKUS: Kundenbeschwerde/Problem zuerst lösen, dann auf Positives eingehen
 
 VORGABE (befolge diese strikt): ${anw}
 ${best ? 'BESTELLUNG: ' + best : ''}
@@ -1777,6 +1778,16 @@ function bbClear(){
   document.getElementById('bb-analyse').style.display = 'none';
   document.getElementById('bb-result').style.display = 'none';
   bbShowError('');
+}
+
+function bbSelectSolution(val){
+  document.getElementById('bb-anweisung').value = val;
+  document.getElementById('bb-solution-modal').style.display = 'none';
+}
+
+function bbShowSolutionModal(){
+  document.getElementById('bb-solution-modal').style.display = 'flex';
+  document.getElementById('bb-solution-modal').style.justifyContent = 'center';
 }
 
 
@@ -1933,7 +1944,23 @@ setInterval(()=>{const desk=document.getElementById('desk');let m=600;desk.query
 
 (async()=>{ await init(); wpInit(); })();
 window.addEventListener('resize', ()=>{ renderDesk(); });
-</script><!-- BlumenBuddy Modal -->
+</script><!-- BlumenBuddy Solution Modal -->
+<div id="bb-solution-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:400;backdrop-filter:blur(8px);align-items:center;justify-content:center">
+  <div style="background:rgba(255,255,255,0.85);backdrop-filter:blur(28px);border-radius:16px;padding:24px;max-width:380px;border:1px solid rgba(255,255,255,0.9);box-shadow:0 16px 60px rgba(0,0,0,.15)">
+    <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px">Lösung / Anweisung wählen</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <button onclick="bbSelectSolution('Neuversand')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Neuversand</button>
+      <button onclick="bbSelectSolution('Neuversand + Pflegetipps')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Neuversand + Pflegetipps</button>
+      <button onclick="bbSelectSolution('Wahl: Neuversand oder Gutschein')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Wahl: Neuversand oder Gutschein</button>
+      <button onclick="bbSelectSolution('Erstattung')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Erstattung</button>
+      <button onclick="bbSelectSolution('Foto anfordern')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Foto anfordern</button>
+      <button onclick="bbSelectSolution('Sieht gut aus')" style="padding:10px 12px;background:rgba(0,0,0,0.06);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;text-align:left;transition:all .15s" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">Sieht gut aus</button>
+    </div>
+    <button onclick="document.getElementById('bb-solution-modal').style.display='none'" style="width:100%;padding:8px;background:rgba(0,0,0,0.08);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Abbrechen</button>
+  </div>
+</div>
+
+<!-- BlumenBuddy Modal -->
 <div id="bb-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;backdrop-filter:blur(8px)" onclick="if(event.target.id==='bb-modal')bbCloseModal()">
   <div style="position:absolute;inset:0;display:flex;flex-direction:column;margin:0">
     <!-- Header -->
